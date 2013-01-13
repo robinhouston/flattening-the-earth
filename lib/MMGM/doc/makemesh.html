@@ -1,0 +1,534 @@
+<html>
+<head>
+<title>makemesh.inc</title>
+<style type="text/css">
+<!--
+pre{ font-family: "Courier New", Courier, monospace;
+     background-color: #fafafa;
+     border: 1px solid ; border-color: #000000;
+     padding: 5pt;}
+
+pre a:hover {background-color: #eeeeff;}
+
+.med {color: #880088; font-weight: bold;}    /*Media*/
+.func {color: #880088;}                      /*Functions (float, vector, string)*/
+.mat {color: #880088; font-weight: bold;}    /*Materials*/
+.squig {color: #0000dd;}                     /*{}*/
+.cammod {color: #880088;}                    /*Camera modifiers*/
+.glob {color: #880088; font-weight: bold;}   /*Global*/
+.ident {font-weight: bold;}                  /*Identifiers*/
+.obmod {color: #880088;}                     /*Object modifiers*/
+.globmod {color: #880088;}                   /*Global modifiers*/
+.dirc {color: #880088; font-weight: bold;}   /*Directives*/
+.msg {color: #880088; font-weight: bold;}    /*Message streams*/
+.atmo {color: #880088; font-weight: bold;}   /*Atmospheric objects*/
+.matmod {color: #880088;}                    /*Material modifiers*/
+.io {color: #880088; font-weight: bold;}     /*File I/O*/
+.slcom {color: #009922; font-style: italic;} /*Single line comment*/
+.obj {color: #880088; font-weight: bold;}    /*Objects*/
+.mod {color: #880088;}                       /*Modifiers (general)*/
+.inter {color: #880088; font-weight: bold;}  /*Interior*/
+.atmod {color: #880088;}                     /*Atmospheric modifiers*/
+.str {color: #ff0000;}                       /*Strings*/
+.medmod {color: #880088;}                    /*Media modifiers*/
+.num {color: #009999;}                       /*Numbers*/
+.ptrn {color: #880088;}                      /*Patterns*/
+.mlcom {color: #009922; font-style: italic;} /*Multi-line comment*/
+.math {color: #ff0000;}                      /*Mathematical operators*/
+.cam {color: #880088; font-weight: bold;}    /*Camera*/
+.lite {color: #880088; font-weight: bold;}   /*Light source*/
+.cond {color: #880088; font-weight: bold;}   /*Conditionals*/
+.litmod {color: #880088;}                    /*Light modifiers*/
+.dot {color: #880088;}                       /*Dot operators*/
+
+-->
+</style>
+</head>
+<body>
+<p>makemesh.inc :</p>
+<pre><span class="slcom">// Persistence of Vision Ray Tracer Include File</span>
+<span class="slcom">// File: makemesh.inc</span>
+<span class="slcom">// Vers: 3.5</span>
+<span class="slcom">// Desc: Macros and functions used in builing mesh2 objects.</span>
+<span class="slcom">// Date: 2002/04/27</span>
+<span class="slcom">// Auth: Ingo Janssen</span>
+
+<span class="slcom">// Rev 2002/10/23 : Added the CheckFileName macro.</span>
+<span class="slcom">//                  Added the option to write Wavefront *.obj files.</span>
+<span class="slcom">//                  Added the option to write *.pcm files, for Chris Colefax' Compressed Mesh Macros.</span>
+<span class="slcom">//                  Added the option to write *.arr files, this writes only the arrays to a file.</span>
+<span class="slcom">//</span>
+
+<span class="dirc">#version</span> <span class="num">3.5</span>;
+<span class="cond">#ifndef</span>(MAKEMESH_INC_TEMP)
+   <span class="dirc">#declare</span> <a name="MAKEMESH_INC_TEMP"><span class="ident">MAKEMESH_INC_TEMP</span></a> <span class="math">=</span> <span class="func">version</span>;
+   <span class="cond">#ifdef</span>(View_POV_Include_Stack)
+      <span class="msg">#debug</span> <span class="str">&quot;including makemesh.inc\n&quot;</span>
+   <span class="cond">#end</span>
+
+
+<span class="slcom">//====== Macros and Functions ======//</span>
+
+<span class="mlcom">/*==============
+LInterpolate() : Linear interpolatio of a vector or float between Min and Max.
+Min : minimal float value or vector.
+Max : Maximal float value or vector.
+Val : A float in the range 0 - 1.
+*/</span>   
+   <span class="dirc">#macro</span> <a name="LInterpolate"><span class="ident">LInterpolate</span></a>(Val, Min, Max)
+      (Min<span class="math">+</span>(Max<span class="math">-</span>Min)<span class="math">*</span>Val) 
+   <span class="cond">#end</span>
+
+
+<span class="mlcom">/*=========
+RangeMM() : Adjusts input values in the range [RMin, RMax] to fit in the range
+[Min, Max].
+Val : A float value in the range [Rmin, Rmax].
+*/</span>   
+   <span class="dirc">#declare</span> <a name="RangeMM"><span class="ident">RangeMM</span></a><span class="math">=</span><span class="func">function</span>(Val,Rmin,Rmax,Min,Max)<span class="squig">{</span>
+      (((Val<span class="math">-</span>Rmin)<span class="math">/</span>(Rmax<span class="math">-</span>Rmin))<span class="math">*</span>(Max<span class="math">-</span>Min)<span class="math">+</span>Min)
+   <span class="squig">}</span>
+
+<span class="mlcom">/*=================
+  If Return has a value of 0 the mesh will not be build,
+  but it will be parsed from file. 
+*/</span>
+<span class="dirc">#macro</span> <a name="CheckFileName"><span class="ident">CheckFileName</span></a>(FileName)
+   <span class="dirc">#local</span> Len<span class="math">=</span><span class="func">strlen</span>(FileName);
+   <span class="cond">#if</span>(Len<span class="math">&gt;</span><span class="num">0</span>)
+      <span class="cond">#if</span>(<span class="func">file_exists</span>(FileName))
+         <span class="cond">#if</span>(Len<span class="math">&gt;</span><span class="math">=</span><span class="num">4</span>)
+            <span class="dirc">#local</span> Ext<span class="math">=</span><span class="func">strlwr</span>(<span class="func">substr</span>(FileName,Len<span class="math">-</span><span class="num">3</span>,<span class="num">4</span>))
+            <span class="cond">#if</span> (<span class="func">strcmp</span>(Ext,<span class="str">&quot;.obj&quot;</span>)<span class="math">=</span><span class="num">0</span> <span class="math">|</span> <span class="func">strcmp</span>(Ext,<span class="str">&quot;.pcm&quot;</span>)<span class="math">=</span><span class="num">0</span> <span class="math">|</span> <span class="func">strcmp</span>(Ext,<span class="str">&quot;.arr&quot;</span>)<span class="math">=</span><span class="num">0</span>)
+               <span class="dirc">#local</span> Return<span class="math">=</span><span class="num">99</span>;
+            <span class="cond">#else</span>
+               <span class="dirc">#local</span> Return<span class="math">=</span><span class="num">0</span>;
+            <span class="cond">#end</span>  
+         <span class="cond">#else</span>
+            <span class="dirc">#local</span> Return<span class="math">=</span><span class="num">0</span>;
+         <span class="cond">#end</span>
+      <span class="cond">#else</span>
+         <span class="cond">#if</span>(Len<span class="math">&gt;</span><span class="math">=</span><span class="num">4</span>)
+            <span class="dirc">#local</span> Ext<span class="math">=</span><span class="func">strlwr</span>(<span class="func">substr</span>(FileName,Len<span class="math">-</span><span class="num">3</span>,<span class="num">4</span>))
+            <span class="cond">#if</span> (<span class="func">strcmp</span>(Ext,<span class="str">&quot;.obj&quot;</span>)<span class="math">=</span><span class="num">0</span> <span class="math">|</span> <span class="func">strcmp</span>(Ext,<span class="str">&quot;.pcm&quot;</span>)<span class="math">=</span><span class="num">0</span> <span class="math">|</span> <span class="func">strcmp</span>(Ext,<span class="str">&quot;.arr&quot;</span>)<span class="math">=</span><span class="num">0</span>)
+               <span class="cond">#if</span> (<span class="func">strcmp</span>(Ext,<span class="str">&quot;.obj&quot;</span>)<span class="math">=</span><span class="num">0</span>)
+                  <span class="dirc">#local</span> Return<span class="math">=</span><span class="num">2</span>;
+               <span class="cond">#end</span>
+               <span class="cond">#if</span> (<span class="func">strcmp</span>(Ext,<span class="str">&quot;.pcm&quot;</span>)<span class="math">=</span><span class="num">0</span>)
+                  <span class="dirc">#local</span> Return<span class="math">=</span><span class="num">3</span>;
+               <span class="cond">#end</span>
+               <span class="cond">#if</span> (<span class="func">strcmp</span>(Ext,<span class="str">&quot;.arr&quot;</span>)<span class="math">=</span><span class="num">0</span>)
+                  <span class="dirc">#local</span> Return<span class="math">=</span><span class="num">4</span>;
+               <span class="cond">#end</span>
+            <span class="cond">#else</span>
+               <span class="dirc">#local</span> Return<span class="math">=</span><span class="num">1</span>;
+            <span class="cond">#end</span>  
+         <span class="cond">#else</span>
+            <span class="dirc">#local</span> Return<span class="math">=</span><span class="num">1</span>;
+         <span class="cond">#end</span>
+      <span class="cond">#end</span>
+   <span class="cond">#else</span>
+      <span class="dirc">#local</span> Return<span class="math">=</span><span class="num">1</span>;
+   <span class="cond">#end</span>
+   (Return)
+<span class="cond">#end</span>
+
+<span class="mlcom">/*================= 
+BuildWriteMesh2() : Builds and optionally writes a mesh2 object based on 3 input
+arrays, the number of quads in U and V direction and a filename.
+VecArr   : The array that contains the vertices of the triangles in the mesh.
+NormArr  : The array with the normal vectors that go with the vertices.
+UVArr    : The array containing the uv_vectors.
+U        : The amount of subdivisions of the surface in the u-direction.
+V        : The amount of subdivisions in the v-direction.
+           Based on the U and V values the face_indices of the  triangles in the
+           mesh are calculated.
+FileName : The name of the file to whitch the mesh will be written. If is an
+           empty string (&quot;&quot;), no file will be written.
+           If the file extension is 'obj' a Wavefront objectfile will be written.
+           If the extension is 'pcm' a compressed mesh file is written.
+           If a file name is given, the macro will first check if it already exists.
+           If that is so, it will try to parse the existing file unless it's a '*.obj',
+           '*.pcm' or '*.arr' file as POV-Ray can not read them directly. In this case a new
+           mesh will be generated, but the existing files will _not_ be over-written.
+*/</span>
+   <span class="dirc">#macro</span> <a name="BuildWriteMesh2"><span class="ident">BuildWriteMesh2</span></a>(VecArr, NormArr, UVArr, U, V, FileName)
+      <span class="cond">#if</span>(<span class="func">strlen</span>(FileName)<span class="math">!</span><span class="math">=</span><span class="num">0</span>)
+         <span class="dirc">#local</span> Write<span class="math">=</span><a href="#CheckFileName">CheckFileName</a>(FileName);
+         <span class="cond">#if</span>(Write<span class="math">=</span><span class="num">99</span>)
+            <span class="dirc">#local</span> Write<span class="math">=</span><span class="num">0</span>;
+         <span class="cond">#end</span>
+         <span class="cond">#if</span> (Write<span class="math">=</span><span class="num">0</span>)
+            <span class="msg">#debug</span> <span class="func">concat</span>(
+               <span class="str">&quot;\n\n The exis&quot;</span>,<span class="str">&quot;ting file: '&quot;</span>, FileName ,<span class="str">&quot;' will not be over-written\n&quot;</span>,
+               <span class="str">&quot; The mesh2 will not be parsed from the &quot;</span>, FileName,<span class="str">&quot; file&quot;</span>,
+               <span class="str">&quot;\n   - vertex_vectors\n&quot;</span>)   
+         <span class="cond">#else</span>
+            <span class="msg">#debug</span> <span class="func">concat</span>(
+               <span class="str">&quot;\n\n Building mesh2 &amp; Writing file: '&quot;</span>, FileName , 
+               <span class="str">&quot;'\n   - vertex_vectors\n&quot;</span>
+            )
+            <span class="io">#fopen</span> MeshFile FileName <span class="func">write</span>
+            <span class="dirc">#switch</span> (Write)
+               <span class="cond">#case</span>(<span class="num">1</span>)
+                  <span class="io">#write</span>(
+                     MeshFile,
+                     <span class="str">&quot;#declare Surface = mesh2 {\n&quot;</span>
+                  )
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">2</span>)
+                  <span class="io">#write</span>(
+                     MeshFile,
+                     <span class="str">&quot;# File: &quot;</span>,FileName,<span class="str">&quot;\n&quot;</span>,
+                  )
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">3</span>)
+                  <span class="io">#write</span>(
+                     MeshFile,
+                     <span class="str">&quot;\&quot;PCM1\&quot;,\n&quot;</span>
+                  )
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">4</span>)
+                  <span class="io">#write</span>(
+                     MeshFile,
+                     <span class="str">&quot;// Arrays for building a mesh2{} object.\n&quot;</span>,
+                     <span class="str">&quot;// the arrays are declared with the following names:\n&quot;</span>,
+                     <span class="str">&quot;// VertexVectors, NormalVectors, UVVectors and FaceIndices.\n\n&quot;</span>
+                  )
+               <span class="cond">#break</span>
+            <span class="cond">#end</span>
+         <span class="cond">#end</span>
+      <span class="cond">#else</span>
+         <span class="dirc">#local</span> Write<span class="math">=</span><span class="num">0</span>;
+         <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;\n\n Building mesh2: \n   - vertex_vectors\n&quot;</span>)   
+      <span class="cond">#end</span>
+     
+      <span class="dirc">#local</span> NumVertices<span class="math">=</span><span class="func">dimension_size</span>(VecArr,<span class="num">1</span>);
+      <span class="dirc">#switch</span> (Write)
+         <span class="cond">#case</span>(<span class="num">1</span>)
+            <span class="io">#write</span>(
+               MeshFile,
+               <span class="str">&quot;  vertex_vectors {\n&quot;</span>,
+               <span class="str">&quot;    &quot;</span>, <span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;\n    &quot;</span>
+            )
+         <span class="cond">#break</span>
+         <span class="cond">#case</span>(<span class="num">2</span>)
+            <span class="io">#write</span>(
+               MeshFile,
+               <span class="str">&quot;# Vertices: &quot;</span>,<span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;\n&quot;</span>
+            )
+         <span class="cond">#break</span>
+         <span class="cond">#case</span>(<span class="num">3</span>)
+            <span class="io">#write</span>(
+               MeshFile,
+               <span class="func">str</span>(<span class="num">2</span><span class="math">*</span>NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;,\n&quot;</span>
+            )
+         <span class="cond">#break</span>
+         <span class="cond">#case</span>(<span class="num">4</span>)
+            <span class="io">#write</span>(
+               MeshFile,
+               <span class="str">&quot;#declare VertexVectors= array[&quot;</span>,<span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;] {\n  &quot;</span>
+            )
+         <span class="cond">#break</span>
+      <span class="cond">#end</span>
+      <span class="obj">mesh2</span> <span class="squig">{</span>
+         <span class="obj">vertex_vectors</span> <span class="squig">{</span>
+            NumVertices
+            <span class="dirc">#local</span> I<span class="math">=</span><span class="num">0</span>;
+            <span class="cond">#while</span> (I<span class="math">&lt;</span>NumVertices)
+               VecArr[I]
+               <span class="dirc">#switch</span>(Write)
+                  <span class="cond">#case</span>(<span class="num">1</span>)
+                     <span class="io">#write</span>(MeshFile, VecArr[I])
+                  <span class="cond">#break</span>
+                  <span class="cond">#case</span>(<span class="num">2</span>)
+                     <span class="io">#write</span>(
+                        MeshFile,
+                        <span class="str">&quot;v &quot;</span>, VecArr[I]<span class="num">.</span><span class="dot">x</span>,<span class="str">&quot; &quot;</span>, VecArr[I]<span class="num">.</span><span class="dot">y</span>,<span class="str">&quot; &quot;</span>, VecArr[I]<span class="num">.</span><span class="dot">z</span>,<span class="str">&quot;\n&quot;</span>
+                     )
+                  <span class="cond">#break</span>
+                  <span class="cond">#case</span>(<span class="num">3</span>)
+                     <span class="io">#write</span>(
+                        MeshFile,
+                        VecArr[I]<span class="num">.</span><span class="dot">x</span>,<span class="str">&quot;,&quot;</span>, VecArr[I]<span class="num">.</span><span class="dot">y</span>,<span class="str">&quot;,&quot;</span>, VecArr[I]<span class="num">.</span><span class="dot">z</span>,<span class="str">&quot;,\n&quot;</span>
+                     )
+                  <span class="cond">#break</span>
+                  <span class="cond">#case</span>(<span class="num">4</span>)
+                     <span class="io">#write</span>(MeshFile, VecArr[I])
+                  <span class="cond">#break</span>
+               <span class="cond">#end</span>
+               <span class="dirc">#local</span> I<span class="math">=</span>I<span class="math">+</span><span class="num">1</span>;
+               <span class="cond">#if</span>(Write<span class="math">=</span><span class="num">1</span> <span class="math">|</span> Write<span class="math">=</span><span class="num">4</span>)
+                  <span class="cond">#if</span>(<span class="func">mod</span>(I,<span class="num">3</span>)<span class="math">=</span><span class="num">0</span>)
+                     <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n    &quot;</span>)
+                  <span class="cond">#end</span>
+               <span class="cond">#end</span> 
+            <span class="cond">#end</span>
+            <span class="dirc">#switch</span>(Write)
+               <span class="cond">#case</span>(<span class="num">1</span>) 
+                  <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n  }\n&quot;</span>)
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">2</span>)
+                  <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n&quot;</span>)
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">3</span>)
+                  <span class="slcom">// do nothing</span>
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">4</span>) 
+                  <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n}\n&quot;</span>)
+               <span class="cond">#break</span>
+            <span class="cond">#end</span>
+         <span class="squig">}</span>
+   
+         <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;   - normal_vectors\n&quot;</span>)     
+         <span class="dirc">#local</span> NumVertices<span class="math">=</span><span class="func">dimension_size</span>(NormArr,<span class="num">1</span>);
+         <span class="dirc">#switch</span>(Write)
+            <span class="cond">#case</span>(<span class="num">1</span>)
+               <span class="io">#write</span>(
+                  MeshFile,
+                  <span class="str">&quot;  normal_vectors {\n&quot;</span>,
+                  <span class="str">&quot;    &quot;</span>, <span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;\n    &quot;</span>
+               )
+            <span class="cond">#break</span>
+            <span class="cond">#case</span>(<span class="num">2</span>)
+               <span class="io">#write</span>(
+                  MeshFile,
+                  <span class="str">&quot;# Normals: &quot;</span>,<span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;\n&quot;</span>
+               )
+            <span class="cond">#break</span>
+            <span class="cond">#case</span>(<span class="num">3</span>)
+               <span class="slcom">// do nothing</span>
+            <span class="cond">#break</span>
+            <span class="cond">#case</span>(<span class="num">4</span>)
+               <span class="io">#write</span>(
+                  MeshFile,
+                  <span class="str">&quot;#declare NormalVectors= array[&quot;</span>,<span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;] {\n  &quot;</span>
+               )
+            <span class="cond">#break</span>
+         <span class="cond">#end</span>
+         <span class="obj">normal_vectors</span> <span class="squig">{</span>
+            NumVertices
+            <span class="dirc">#local</span> I<span class="math">=</span><span class="num">0</span>;
+            <span class="cond">#while</span> (I<span class="math">&lt;</span>NumVertices)
+               NormArr[I]
+               <span class="dirc">#switch</span>(Write)
+                  <span class="cond">#case</span>(<span class="num">1</span>)
+                     <span class="io">#write</span>(MeshFile NormArr[I])
+                  <span class="cond">#break</span>
+                  <span class="cond">#case</span>(<span class="num">2</span>)
+                     <span class="io">#write</span>(
+                        MeshFile,
+                        <span class="str">&quot;vn &quot;</span>, NormArr[I]<span class="num">.</span><span class="dot">x</span>,<span class="str">&quot; &quot;</span>, NormArr[I]<span class="num">.</span><span class="dot">y</span>,<span class="str">&quot; &quot;</span>, NormArr[I]<span class="num">.</span><span class="dot">z</span>,<span class="str">&quot;\n&quot;</span>
+                     )
+                  <span class="cond">#break</span>
+                  <span class="cond">#case</span>(<span class="num">3</span>)
+                     <span class="io">#write</span>(
+                        MeshFile,
+                        NormArr[I]<span class="num">.</span><span class="dot">x</span>,<span class="str">&quot;,&quot;</span>, NormArr[I]<span class="num">.</span><span class="dot">y</span>,<span class="str">&quot;,&quot;</span>, NormArr[I]<span class="num">.</span><span class="dot">z</span>,<span class="str">&quot;,\n&quot;</span>
+                     )
+                  <span class="cond">#break</span>
+                  <span class="cond">#case</span>(<span class="num">4</span>)
+                     <span class="io">#write</span>(MeshFile NormArr[I])
+                  <span class="cond">#break</span>
+               <span class="cond">#end</span>
+               <span class="dirc">#local</span> I<span class="math">=</span>I<span class="math">+</span><span class="num">1</span>;
+               <span class="cond">#if</span>(Write<span class="math">=</span><span class="num">1</span> <span class="math">|</span> Write<span class="math">=</span><span class="num">4</span>) 
+                  <span class="cond">#if</span>(<span class="func">mod</span>(I,<span class="num">3</span>)<span class="math">=</span><span class="num">0</span>)
+                     <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n    &quot;</span>)
+                  <span class="cond">#end</span>
+               <span class="cond">#end</span> 
+            <span class="cond">#end</span>
+            <span class="dirc">#switch</span>(Write)
+               <span class="cond">#case</span>(<span class="num">1</span>)
+                  <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n  }\n&quot;</span>)
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">2</span>)
+                  <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n&quot;</span>)
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">3</span>)
+                  <span class="slcom">//do nothing</span>
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">4</span>)
+                  <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n}\n&quot;</span>)
+               <span class="cond">#break</span>
+            <span class="cond">#end</span>
+         <span class="squig">}</span>
+         
+         <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;   - uv_vectors\n&quot;</span>)   
+         <span class="dirc">#local</span> NumVertices<span class="math">=</span><span class="func">dimension_size</span>(UVArr,<span class="num">1</span>);
+         <span class="dirc">#switch</span>(Write)
+            <span class="cond">#case</span>(<span class="num">1</span>)
+               <span class="io">#write</span>(
+                  MeshFile, 
+                  <span class="str">&quot;  uv_vectors {\n&quot;</span>,
+                  <span class="str">&quot;    &quot;</span>, <span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;\n    &quot;</span>
+               )
+             <span class="cond">#break</span>
+             <span class="cond">#case</span>(<span class="num">2</span>)
+               <span class="io">#write</span>(
+                  MeshFile,
+                  <span class="str">&quot;# UV-vectors: &quot;</span>,<span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;\n&quot;</span>
+               )
+             <span class="cond">#break</span>
+             <span class="cond">#case</span>(<span class="num">3</span>)
+               <span class="slcom">// do nothing, *.pcm does not support uv-vectors</span>
+             <span class="cond">#break</span>
+             <span class="cond">#case</span>(<span class="num">4</span>)
+                <span class="io">#write</span>(
+                   MeshFile,
+                   <span class="str">&quot;#declare UVVectors= array[&quot;</span>,<span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;] {\n  &quot;</span>
+                )
+             <span class="cond">#break</span>
+         <span class="cond">#end</span>
+         <span class="obj">uv_vectors</span> <span class="squig">{</span>
+            NumVertices
+            <span class="dirc">#local</span> I<span class="math">=</span><span class="num">0</span>;
+            <span class="cond">#while</span> (I<span class="math">&lt;</span>NumVertices)
+               UVArr[I]
+               <span class="dirc">#switch</span>(Write)
+                  <span class="cond">#case</span>(<span class="num">1</span>)
+                     <span class="io">#write</span>(MeshFile UVArr[I])
+                  <span class="cond">#break</span>
+                  <span class="cond">#case</span>(<span class="num">2</span>)
+                     <span class="io">#write</span>(
+                        MeshFile,
+                        <span class="str">&quot;vt &quot;</span>, UVArr[I]<span class="num">.</span><span class="dot">u</span>,<span class="str">&quot; &quot;</span>, UVArr[I]<span class="num">.</span><span class="dot">v</span>,<span class="str">&quot;\n&quot;</span>
+                     )
+                  <span class="cond">#break</span>
+                  <span class="cond">#case</span>(<span class="num">3</span>)
+                     <span class="slcom">//do nothing</span>
+                  <span class="cond">#break</span>
+                  <span class="cond">#case</span>(<span class="num">4</span>)
+                     <span class="io">#write</span>(MeshFile UVArr[I])
+                  <span class="cond">#break</span>
+               <span class="cond">#end</span>
+               <span class="dirc">#local</span> I<span class="math">=</span>I<span class="math">+</span><span class="num">1</span>; 
+               <span class="cond">#if</span>(Write<span class="math">=</span><span class="num">1</span> <span class="math">|</span> Write<span class="math">=</span><span class="num">4</span>)
+                  <span class="cond">#if</span>(<span class="func">mod</span>(I,<span class="num">3</span>)<span class="math">=</span><span class="num">0</span>)
+                     <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n    &quot;</span>)
+                  <span class="cond">#end</span> 
+               <span class="cond">#end</span>
+            <span class="cond">#end</span> 
+            <span class="dirc">#switch</span>(Write)
+               <span class="cond">#case</span>(<span class="num">1</span>)
+                  <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n  }\n&quot;</span>)
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">2</span>)
+                  <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n&quot;</span>)
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">3</span>)
+                  <span class="slcom">//do nothing</span>
+               <span class="cond">#break</span>
+               <span class="cond">#case</span>(<span class="num">4</span>)
+                  <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n}\n&quot;</span>)
+               <span class="cond">#break</span>
+            <span class="cond">#end</span>
+         <span class="squig">}</span>
+   
+         <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;   - face_indices\n&quot;</span>)   
+         <span class="dirc">#declare</span> <a name="NumFaces"><span class="ident">NumFaces</span></a><span class="math">=</span>U<span class="math">*</span>V<span class="math">*</span><span class="num">2</span>;
+         <span class="dirc">#switch</span>(Write)
+            <span class="cond">#case</span>(<span class="num">1</span>)
+               <span class="io">#write</span>(
+                  MeshFile,
+                  <span class="str">&quot;  face_indices {\n&quot;</span>
+                  <span class="str">&quot;    &quot;</span>, <span class="func">str</span>(<a href="#NumFaces">NumFaces</a>,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;\n    &quot;</span>
+               )
+            <span class="cond">#break</span>
+            <span class="cond">#case</span>(<span class="num">2</span>)
+               <span class="io">#write</span> (
+                  MeshFile,
+                  <span class="str">&quot;# faces: &quot;</span>,<span class="func">str</span>(<a href="#NumFaces">NumFaces</a>,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;\n&quot;</span>
+               )
+            <span class="cond">#break</span>
+            <span class="cond">#case</span>(<span class="num">3</span>)
+               <span class="io">#write</span> (
+                  MeshFile,
+                  <span class="str">&quot;0,&quot;</span>,<span class="func">str</span>(<a href="#NumFaces">NumFaces</a>,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;,\n&quot;</span>
+               )
+            <span class="cond">#break</span>
+            <span class="cond">#case</span>(<span class="num">4</span>)
+               <span class="io">#write</span>(
+                  MeshFile,
+                  <span class="str">&quot;#declare FaceIndices= array[&quot;</span>,<span class="func">str</span>(<a href="#NumFaces">NumFaces</a>,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot;] {\n  &quot;</span>
+               )
+            <span class="cond">#break</span>
+         <span class="cond">#end</span>
+         <span class="obj">face_indices</span> <span class="squig">{</span>
+            <a href="#NumFaces">NumFaces</a>
+            <span class="dirc">#local</span> I<span class="math">=</span><span class="num">0</span>;
+            <span class="dirc">#local</span> H<span class="math">=</span><span class="num">0</span>;
+            <span class="dirc">#local</span> NumVertices<span class="math">=</span><span class="func">dimension_size</span>(VecArr,<span class="num">1</span>);
+            <span class="cond">#while</span> (I<span class="math">&lt;</span>V)
+               <span class="dirc">#local</span> J<span class="math">=</span><span class="num">0</span>;
+               <span class="cond">#while</span> (J<span class="math">&lt;</span>U)
+                  <span class="dirc">#local</span> Ind<span class="math">=</span>(I<span class="math">*</span>U)<span class="math">+</span>I<span class="math">+</span>J;
+                  <span class="math">&lt;</span>Ind, Ind<span class="math">+</span><span class="num">1</span>, Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">&gt;</span>, <span class="math">&lt;</span>Ind, Ind<span class="math">+</span>U<span class="math">+</span><span class="num">1</span>, Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">&gt;</span>
+                  <span class="dirc">#switch</span>(Write)
+                     <span class="cond">#case</span>(<span class="num">1</span>)
+                        <span class="io">#write</span>(
+                           MeshFile,
+                           <span class="math">&lt;</span>Ind, Ind<span class="math">+</span><span class="num">1</span>, Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">&gt;</span>, <span class="math">&lt;</span>Ind, Ind<span class="math">+</span>U<span class="math">+</span><span class="num">1</span>, Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">&gt;</span>
+                        )
+                     <span class="cond">#break</span>
+                     <span class="cond">#case</span>(<span class="num">2</span>)
+                        <span class="io">#write</span>(
+                           MeshFile,
+                           <span class="str">&quot;f &quot;</span>,Ind<span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span><span class="num">1</span>,<span class="str">&quot; &quot;</span>,Ind<span class="math">+</span><span class="num">1</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span><span class="num">1</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span><span class="num">1</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot; &quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;\n&quot;</span>,
+                           <span class="str">&quot;f &quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">1</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">1</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">1</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot; &quot;</span>,Ind<span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span><span class="num">1</span>,<span class="str">&quot; &quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;/&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">+</span><span class="num">1</span>,<span class="str">&quot;\n&quot;</span>
+                        )
+                     <span class="cond">#break</span>
+                     <span class="cond">#case</span>(<span class="num">3</span>)
+                        <span class="io">#write</span>(
+                           MeshFile,
+                           Ind,<span class="str">&quot;,&quot;</span>,Ind<span class="math">+</span>NumVertices,<span class="str">&quot;,&quot;</span>,Ind<span class="math">+</span><span class="num">1</span>,<span class="str">&quot;,&quot;</span>,Ind<span class="math">+</span><span class="num">1</span><span class="math">+</span>NumVertices,<span class="str">&quot;,&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span>,<span class="str">&quot;,&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">+</span>NumVertices,<span class="str">&quot;,\n&quot;</span>
+                           Ind<span class="math">+</span>U<span class="math">+</span><span class="num">1</span>,<span class="str">&quot;,&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">1</span><span class="math">+</span>NumVertices,<span class="str">&quot;,&quot;</span>,Ind,<span class="str">&quot;,&quot;</span>,Ind<span class="math">+</span>NumVertices,<span class="str">&quot;,&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span>,<span class="str">&quot;,&quot;</span>,Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">+</span>NumVertices,<span class="str">&quot;,\n&quot;</span>
+                        )
+                     <span class="cond">#break</span>
+                     <span class="cond">#case</span>(<span class="num">4</span>)
+                        <span class="io">#write</span>(
+                           MeshFile,
+                           <span class="math">&lt;</span>Ind, Ind<span class="math">+</span><span class="num">1</span>, Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">&gt;</span>, <span class="math">&lt;</span>Ind, Ind<span class="math">+</span>U<span class="math">+</span><span class="num">1</span>, Ind<span class="math">+</span>U<span class="math">+</span><span class="num">2</span><span class="math">&gt;</span>
+                        )
+                     <span class="cond">#break</span>
+                  <span class="cond">#end</span>
+                  <span class="dirc">#local</span> J<span class="math">=</span>J<span class="math">+</span><span class="num">1</span>;
+                  <span class="dirc">#local</span> H<span class="math">=</span>H<span class="math">+</span><span class="num">1</span>;
+                  <span class="cond">#if</span>(Write<span class="math">=</span><span class="num">1</span> <span class="math">|</span> Write<span class="math">=</span><span class="num">4</span>)
+                     <span class="cond">#if</span>(<span class="func">mod</span>(H,<span class="num">3</span>)<span class="math">=</span><span class="num">0</span>)
+                        <span class="io">#write</span>(MeshFile,<span class="str">&quot;\n    &quot;</span>)
+                     <span class="cond">#end</span> 
+                  <span class="cond">#end</span>
+               <span class="cond">#end</span>
+               <span class="dirc">#local</span> I<span class="math">=</span>I<span class="math">+</span><span class="num">1</span>;
+            <span class="cond">#end</span>
+         <span class="squig">}</span>
+         <span class="dirc">#switch</span>(Write)
+            <span class="cond">#case</span>(<span class="num">1</span>)
+               <span class="io">#write</span>(MeshFile, <span class="str">&quot;\n  }\n}&quot;</span>)
+               <span class="io">#fclose</span> MeshFile
+               <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot; Done writing\n&quot;</span>)
+            <span class="cond">#break</span>
+            <span class="cond">#case</span>(<span class="num">2</span>)
+               <span class="io">#fclose</span> MeshFile
+               <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot; Done writing\n&quot;</span>)
+            <span class="cond">#break</span>
+            <span class="cond">#case</span>(<span class="num">3</span>)
+               <span class="io">#fclose</span> MeshFile
+               <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot; Done writing\n&quot;</span>)
+            <span class="cond">#break</span>
+            <span class="cond">#case</span>(<span class="num">4</span>)
+               <span class="io">#write</span>(MeshFile, <span class="str">&quot;\n}\n}&quot;</span>)
+               <span class="io">#fclose</span> MeshFile
+               <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot; Done writing\n&quot;</span>)
+            <span class="cond">#break</span>
+         <span class="cond">#end</span>
+      <span class="squig">}</span>
+   <span class="cond">#end</span>
+
+<span class="slcom">//====== End of Macros and Functions ======//</span>
+
+<span class="cond">#end</span> <span class="slcom">//ifndef</span>
+</pre>
+</body>
+</html>

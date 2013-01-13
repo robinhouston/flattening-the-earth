@@ -1,0 +1,262 @@
+<html>
+<head>
+<title>param.inc</title>
+<style type="text/css">
+<!--
+pre{ font-family: "Courier New", Courier, monospace;
+     background-color: #fafafa;
+     border: 1px solid ; border-color: #000000;
+     padding: 5pt;}
+
+pre a:hover {background-color: #eeeeff;}
+
+.med {color: #880088; font-weight: bold;}    /*Media*/
+.func {color: #880088;}                      /*Functions (float, vector, string)*/
+.mat {color: #880088; font-weight: bold;}    /*Materials*/
+.squig {color: #0000dd;}                     /*{}*/
+.cammod {color: #880088;}                    /*Camera modifiers*/
+.glob {color: #880088; font-weight: bold;}   /*Global*/
+.ident {font-weight: bold;}                  /*Identifiers*/
+.obmod {color: #880088;}                     /*Object modifiers*/
+.globmod {color: #880088;}                   /*Global modifiers*/
+.dirc {color: #880088; font-weight: bold;}   /*Directives*/
+.msg {color: #880088; font-weight: bold;}    /*Message streams*/
+.atmo {color: #880088; font-weight: bold;}   /*Atmospheric objects*/
+.matmod {color: #880088;}                    /*Material modifiers*/
+.io {color: #880088; font-weight: bold;}     /*File I/O*/
+.slcom {color: #009922; font-style: italic;} /*Single line comment*/
+.obj {color: #880088; font-weight: bold;}    /*Objects*/
+.mod {color: #880088;}                       /*Modifiers (general)*/
+.inter {color: #880088; font-weight: bold;}  /*Interior*/
+.atmod {color: #880088;}                     /*Atmospheric modifiers*/
+.str {color: #ff0000;}                       /*Strings*/
+.medmod {color: #880088;}                    /*Media modifiers*/
+.num {color: #009999;}                       /*Numbers*/
+.ptrn {color: #880088;}                      /*Patterns*/
+.mlcom {color: #009922; font-style: italic;} /*Multi-line comment*/
+.math {color: #ff0000;}                      /*Mathematical operators*/
+.cam {color: #880088; font-weight: bold;}    /*Camera*/
+.lite {color: #880088; font-weight: bold;}   /*Light source*/
+.cond {color: #880088; font-weight: bold;}   /*Conditionals*/
+.litmod {color: #880088;}                    /*Light modifiers*/
+.dot {color: #880088;}                       /*Dot operators*/
+
+-->
+</style>
+</head>
+<body>
+<p>param.inc :</p>
+<pre><span class="slcom">// Persistence of Vision Ray Tracer Include File</span>
+<span class="slcom">// File: param.inc</span>
+<span class="slcom">// Vers: 3.5</span>
+<span class="slcom">// Desc: An include file to generate a mesh2 of smooth_triangles </span>
+<span class="slcom">//       with uv_vectors from a set of parametric functions. </span>
+<span class="slcom">// Date: 2002/04/27</span>
+<span class="slcom">// Auth: Ingo Janssen</span>
+
+<span class="slcom">// rev 2002/07/25: fixed an error of the normal calculation near</span>
+<span class="slcom">//                 the edges of an object. (Umin &amp; Vmin)</span>
+<span class="slcom">// rev 2002/20/10: split the whole thing in two macros, Parametric()</span>
+<span class="slcom">//                 and Paramcalc(). The latter is where the actual</span>
+<span class="slcom">//                 work is done. It can be used directly. It *has* to</span>
+<span class="slcom">//                 be used directly when the surface is defined through</span>
+<span class="slcom">//                 macros instead of functions.</span>
+<span class="slcom">// rev 2002/22/10: For uv-mapping the texture is now taken from &lt;0,0&gt;-&lt;1,1&gt;,</span>
+<span class="slcom">//                 this used to be &lt;UVmin&gt;-&lt;UVmax&gt;. So this may break some scenes!</span>
+
+<span class="mlcom">/*======
+Parametric(__Fx, __Fy, __Fz, &lt;UVmin&gt;, &lt;UVmax&gt;, Iter_U, Iter_V, FileName):
+           Builds a parametric surface out of three given functions (__Fx, __Fy, __Fz).
+UVmin    : A 2-D vector that gives the lower boundaries of the uv rectangle.
+UVmax    : A 2-D vector that gives the upper boundaries of the uv rectangle.
+           These vectors are the range within whitch the surface is calculated.
+Iter_U   : Sets the resolution of the mesh in the u range.
+Iter_V   : Sets the resolution of the mesh in the v range.
+FileName : The name of the file to whitch the mesh will be written. If is an
+           empty string (&quot;&quot;), no file will be written.
+           If the file extension is 'obj' a Wavefront objectfile will be written.
+           If the extension is 'pcm' a compressed mesh file is written.
+           If a file name is given, the macro will first check if it already exists.
+           If that is so, it will try to parse the existing file unless it's a '*.obj',
+           '*.pcm' or '*.arr' file as POV-Ray can not read them directly. In this case a new
+           mesh will be generated, but the existing files will _not_ be over-written.
+Use :
+At the top of your scene-file:
+   
+      #include &quot;param.inc&quot;
+
+Set up a set of parametric functions, using
+the function(){} statement. A unit sphere may look like this:
+
+      #declare R=1;
+      object { 
+        Parametric (
+          function(u,v){R*sin(v)*cos(u)} ,
+          function(u,v){R*cos(v)} ,       
+          function(u,v){R*sin(v)*sin(u)}
+          &lt;0, FromV(0)&gt;,
+          &lt;pi, 2*pi&gt;,
+          20, 10, &quot;&quot;
+        )
+        pigment {rgb 1}
+      }
+
+Note the use of the macro FromV() to start the v-range with. This means that the
+range is specified as 0 &lt; u &lt;= pi. The minimum will get close to, but not reach
+the value. The three other macros for this are ToU(), FromU() and ToV(). They
+have to be used when the equations can not be solved for the boundaries.
+
+The resolution of the mesh is set with Iter_U and Iter_V, the amount of steps by
+which the u and v ranges are divided. The total amount of triangles calculated
+will be Iter_U*Iter_V*2.
+
+If you want to save the resulting mesh to a file, enter a filename in the macro.
+
+--
+
+Paramcalc(&lt;UVmin&gt;, &lt;UVmax&gt;, Iter_U, Iter_V, FileName) 
+         Builds a parametric object from a set of macros or declared functions.
+         These *have* to be named __Fx , __Fy and __Fz.
+         
+         The other parameters for the macro are the same as for Parametric()
+
+Use :
+At the top of your scene-file:
+   
+      #include &quot;param.inc&quot;
+
+Set up a set of parametric functions or macros, __Fx, __Fy and __Fz         
+
+      #declare R=1;
+      #macro __Fx(U,V) R*sin(V)*cos(U) #end
+      #macro __Fy(U,V) R*cos(V) #end
+      #macro __Fz(U,V) R*sin(V)*sin(U) #end
+
+Note that you can't use lower case u and v in the macros.
+Now the macros can be used to create an object: 
+
+      object { 
+        Paramcalc (
+          &lt;0, FromV(0)&gt;, &lt;pi, 2*pi&gt;,
+          20, 10, &quot;&quot;
+        )
+        pigment {rgb 1}
+        finish{specular 0.3}
+      }
+
+--
+
+Trouble shooting:
+
+** Parse Error: cannot normalize zero-length vector.
+-- Check if the u and v boundaries are specified the right way? Should all
+values be included, or should FromU() ToV() etc. be used?
+
+** Parse Error: No matching } in 'smooth_triangle', camera found instead
+--This happens while reading an unfinished mesh from file. Was parsing stopped while
+writing the mesh? Delete the file.
+*/</span>
+
+
+<span class="dirc">#version</span> <span class="num">3.5</span>;
+<span class="dirc">#include</span> <span class="str">&quot;makemesh.inc&quot;</span>
+
+<span class="dirc">#declare</span> <a name="EPS"><span class="ident">EPS</span></a><span class="math">=</span>(<span class="num">1e-12</span>);
+<span class="dirc">#declare</span> <a name="EPSNorm"><span class="ident">EPSNorm</span></a><span class="math">=</span>(<span class="num">1e-14</span>);
+
+<span class="dirc">#declare</span> <a name="__FU"><span class="ident">__FU</span></a><span class="math">=</span><span class="num">0</span>; <span class="dirc">#declare</span> <a name="__TU"><span class="ident">__TU</span></a><span class="math">=</span><span class="num">0</span>;
+<span class="dirc">#declare</span> <a name="__FV"><span class="ident">__FV</span></a><span class="math">=</span><span class="num">0</span>; <span class="dirc">#declare</span> <a name="__TV"><span class="ident">__TV</span></a><span class="math">=</span><span class="num">0</span>;
+<span class="dirc">#macro</span> <a name="FromU"><span class="ident">FromU</span></a>(N)<span class="dirc">#local</span> N<span class="math">=</span>(N<span class="math">+</span><a href="#EPS">EPS</a>); <span class="dirc">#declare</span> <a name="__FU+"><span class="ident">__FU</span></a><span class="math">=</span><span class="num">1</span>; (N) <span class="cond">#end</span>
+<span class="dirc">#macro</span> <a name="ToU"><span class="ident">ToU</span></a>(N)  <span class="dirc">#local</span> N<span class="math">=</span>(N<span class="math">-</span><a href="#EPS">EPS</a>); <span class="dirc">#declare</span> <a name="__TU+"><span class="ident">__TU</span></a><span class="math">=</span><span class="num">1</span>; (N) <span class="cond">#end</span>
+<span class="dirc">#macro</span> <a name="FromV"><span class="ident">FromV</span></a>(N)<span class="dirc">#local</span> N<span class="math">=</span>(N<span class="math">+</span><a href="#EPS">EPS</a>); <span class="dirc">#declare</span> <a name="__FV+"><span class="ident">__FV</span></a><span class="math">=</span><span class="num">1</span>; (N) <span class="cond">#end</span>
+<span class="dirc">#macro</span> <a name="ToV"><span class="ident">ToV</span></a>(N)  <span class="dirc">#local</span> N<span class="math">=</span>(N<span class="math">-</span><a href="#EPS">EPS</a>); <span class="dirc">#declare</span> <a name="__TV+"><span class="ident">__TV</span></a><span class="math">=</span><span class="num">1</span>; (N) <span class="cond">#end</span>
+
+<span class="dirc">#macro</span> <a name="Parametric"><span class="ident">Parametric</span></a>(__F1__, __F2__, __F3__, UVmin, UVmax, Iter_U, Iter_V, FileName)
+   <span class="cond">#ifdef</span>(__Fx) <span class="dirc">#undef</span> __Fx <span class="cond">#end</span>
+   <span class="cond">#ifdef</span>(__Fy) <span class="dirc">#undef</span> __Fy <span class="cond">#end</span>
+   <span class="cond">#ifdef</span>(__Fz) <span class="dirc">#undef</span> __Fz <span class="cond">#end</span>
+   <span class="dirc">#declare</span> <a name="__Fx"><span class="ident">__Fx</span></a><span class="math">=</span> <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span>__F1__(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">}</span> 
+   <span class="dirc">#declare</span> <a name="__Fy"><span class="ident">__Fy</span></a><span class="math">=</span> <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span>__F2__(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">}</span>
+   <span class="dirc">#declare</span> <a name="__Fz"><span class="ident">__Fz</span></a><span class="math">=</span> <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span>__F3__(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">}</span>
+   Paramcalc(UVmin, UVmax, Iter_U, Iter_V, FileName)
+<span class="cond">#end</span>
+
+<span class="dirc">#macro</span> <a name="Paramcalc"><span class="ident">Paramcalc</span></a>(UVmin, UVmax, Iter_U, Iter_V, FileName)
+   <span class="dirc">#declare</span> <a name="Build"><span class="ident">Build</span></a><span class="math">=</span>CheckFileName(FileName);
+   <span class="cond">#if</span>(<a href="#Build">Build</a><span class="math">=</span><span class="num">0</span>)
+      <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;\n Parsing mesh2 from file: &quot;</span>, FileName, <span class="str">&quot;\n&quot;</span>)
+      <span class="dirc">#include</span> FileName
+      <span class="obj">object</span><span class="squig">{</span>Surface<span class="squig">}</span>
+   <span class="cond">#else</span>
+      <span class="dirc">#local</span> Umin<span class="math">=</span>UVmin<span class="num">.</span><span class="dot">u</span>; <span class="dirc">#local</span> Vmin<span class="math">=</span>UVmin<span class="num">.</span><span class="dot">v</span>;
+      <span class="dirc">#local</span> Umax<span class="math">=</span>UVmax<span class="num">.</span><span class="dot">u</span>; <span class="dirc">#local</span> Vmax<span class="math">=</span>UVmax<span class="num">.</span><span class="dot">v</span>;
+      <span class="dirc">#local</span> dU<span class="math">=</span>Umax<span class="math">-</span>Umin;
+      <span class="dirc">#local</span> dV<span class="math">=</span>Vmax<span class="math">-</span>Vmin;
+      <span class="dirc">#local</span> iU<span class="math">=</span>dU<span class="math">/</span>Iter_U;
+      <span class="dirc">#local</span> iV<span class="math">=</span>dV<span class="math">/</span>Iter_V;
+      <span class="dirc">#local</span> NumVertices<span class="math">=</span>(Iter_U<span class="math">+</span><span class="num">1</span>)<span class="math">*</span>(Iter_V<span class="math">+</span><span class="num">1</span>);
+      <span class="dirc">#local</span> NumFaces<span class="math">=</span>Iter_U<span class="math">*</span>Iter_V<span class="math">*</span><span class="num">2</span>;
+      <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;\n Calculating &quot;</span>,<span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot; vertices for &quot;</span>, <span class="func">str</span>(NumFaces,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot; triangles\n\n&quot;</span>)
+      <span class="msg">#debug</span> <span class="str">&quot;\n&quot;</span>
+      <span class="dirc">#local</span> VecArr<span class="math">=</span><span class="func">array</span>[NumVertices] 
+      <span class="dirc">#local</span> NormArr<span class="math">=</span><span class="func">array</span>[NumVertices] 
+      <span class="dirc">#local</span> UVArr<span class="math">=</span><span class="func">array</span>[NumVertices]
+      <span class="dirc">#local</span> Count<span class="math">=</span><span class="num">0</span>;       
+      <span class="dirc">#local</span> I<span class="math">=</span><span class="num">0</span>;           
+      <span class="dirc">#local</span> V<span class="math">=</span>Vmin<span class="math">-</span>iV;     
+      <span class="cond">#while</span> (I<span class="math">&lt;</span>Iter_V<span class="math">+</span><span class="num">1</span>)   
+         <span class="dirc">#local</span> V<span class="math">=</span>V<span class="math">+</span>iV;     
+         <span class="dirc">#local</span> J<span class="math">=</span><span class="num">0</span>;        
+         <span class="dirc">#local</span> U<span class="math">=</span>Umin<span class="math">-</span>iU;  
+         <span class="cond">#while</span> (J<span class="math">&lt;</span>Iter_U<span class="math">+</span><span class="num">1</span>)
+            <span class="dirc">#local</span> U<span class="math">=</span>U<span class="math">+</span>iU;  
+            <span class="dirc">#local</span> P<span class="math">=</span><span class="math">&lt;</span>(<a href="#__Fx">__Fx</a>(U,V)),(<a href="#__Fy">__Fy</a>(U,V)),(<a href="#__Fz">__Fz</a>(U,V))<span class="math">&gt;</span>;       <span class="slcom">//     |      |      |        </span>
+            <span class="dirc">#local</span> Un<span class="math">=</span>U<span class="math">+</span>(iU);                                     <span class="slcom">//  -- x --- Vn ---- x --</span>
+            <span class="dirc">#local</span> Vn<span class="math">=</span>V<span class="math">+</span>(iV);                                     <span class="slcom">//     |   /  |   /  |   </span>
+            <span class="dirc">#local</span> Um<span class="math">=</span>U<span class="math">-</span>(iU);                                     <span class="slcom">//     | /    | /    |   </span>
+            <span class="dirc">#local</span> Vm<span class="math">=</span>V<span class="math">-</span>(iV);                                     <span class="slcom">//  - Um ---- P ---- Un -</span>
+            <span class="cond">#if</span>(<a href="#__TU+">__TU</a><span class="math">&amp;</span>Un<span class="math">&gt;</span><span class="math">=</span>Umax)                                    <span class="slcom">//     |   /  |   /  |   </span>
+               <span class="dirc">#local</span> Un<span class="math">=</span>U<span class="math">+</span><a href="#EPSNorm">EPSNorm</a>;                               <span class="slcom">//     | /    | /    |   </span>
+            <span class="cond">#end</span>                                                  <span class="slcom">//  -- x --- Vm ---- x --</span>
+            <span class="cond">#if</span>(<a href="#__TV+">__TV</a><span class="math">&amp;</span>Vn<span class="math">&gt;</span><span class="math">=</span>Vmax)                                    <span class="slcom">//     |      |      |   </span>
+               <span class="dirc">#local</span> Vn<span class="math">=</span>V<span class="math">+</span><a href="#EPSNorm">EPSNorm</a>;
+            <span class="cond">#end</span>
+            <span class="cond">#if</span>(<a href="#__FU+">__FU</a><span class="math">&amp;</span>Um<span class="math">&lt;</span><span class="math">=</span>Umin)
+              <span class="dirc">#local</span> Um<span class="math">=</span>U<span class="math">-</span><a href="#EPSNorm">EPSNorm</a>;
+            <span class="cond">#end</span>
+            <span class="cond">#if</span>(<a href="#__FV+">__FV</a><span class="math">&amp;</span>Vm<span class="math">&lt;</span><span class="math">=</span>Vmin)         
+               <span class="dirc">#local</span> Vm<span class="math">=</span>V<span class="math">-</span><a href="#EPSNorm">EPSNorm</a>;
+            <span class="cond">#end</span>
+            <span class="dirc">#local</span> N1<span class="math">=</span><span class="math">&lt;</span>(<a href="#__Fx">__Fx</a>(Un,V)),(<a href="#__Fy">__Fy</a>(Un,V)),(<a href="#__Fz">__Fz</a>(Un,V))<span class="math">&gt;</span>;   <span class="slcom">// Recalculating these points on each pass</span>
+            <span class="dirc">#local</span> N2<span class="math">=</span><span class="math">&lt;</span>(<a href="#__Fx">__Fx</a>(U,Vn)),(<a href="#__Fy">__Fy</a>(U,Vn)),(<a href="#__Fz">__Fz</a>(U,Vn))<span class="math">&gt;</span>;   <span class="slcom">// seems to be faster than storing them in,</span>
+            <span class="dirc">#local</span> N3<span class="math">=</span><span class="math">&lt;</span>(<a href="#__Fx">__Fx</a>(Um,V)),(<a href="#__Fy">__Fy</a>(Um,V)),(<a href="#__Fz">__Fz</a>(Um,V))<span class="math">&gt;</span>;   <span class="slcom">// and retreiving them from arrays.</span>
+            <span class="dirc">#local</span> N4<span class="math">=</span><span class="math">&lt;</span>(<a href="#__Fx">__Fx</a>(U,Vm)),(<a href="#__Fy">__Fy</a>(U,Vm)),(<a href="#__Fz">__Fz</a>(U,Vm))<span class="math">&gt;</span>;
+            <span class="dirc">#local</span> A<span class="math">=</span>(N1<span class="math">-</span>P);
+            <span class="dirc">#local</span> B<span class="math">=</span>(N2<span class="math">-</span>P);      
+            <span class="dirc">#local</span> C<span class="math">=</span>(N3<span class="math">-</span>P);
+            <span class="dirc">#local</span> D<span class="math">=</span>(N4<span class="math">-</span>P);
+            <span class="dirc">#local</span> N1<span class="math">=</span><span class="func">vcross</span>(A,B);
+            <span class="dirc">#local</span> N2<span class="math">=</span><span class="func">vcross</span>(B,C);
+            <span class="dirc">#local</span> N3<span class="math">=</span><span class="func">vcross</span>(C,D);
+            <span class="dirc">#local</span> N4<span class="math">=</span><span class="func">vcross</span>(D,A);
+            <span class="dirc">#local</span> NormArr[Count]<span class="math">=</span><span class="func">vnormalize</span>(N4<span class="math">+</span>N1<span class="math">+</span>N2<span class="math">+</span>N3); 
+            <span class="dirc">#local</span> VecArr[Count]<span class="math">=</span>P;
+            <span class="dirc">#local</span> UVArr[Count]<span class="math">=</span><span class="math">&lt;</span>(U<span class="math">-</span>Umin)<span class="math">/</span>dU,(V<span class="math">-</span>Vmin)<span class="math">/</span>dV<span class="math">&gt;</span>;
+            <span class="dirc">#local</span> Count<span class="math">=</span>Count<span class="math">+</span><span class="num">1</span>;
+            <span class="dirc">#local</span> J<span class="math">=</span>J<span class="math">+</span><span class="num">1</span>;            
+         <span class="cond">#end</span>
+         <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;\r Done &quot;</span>, <span class="func">str</span>(Count,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot; vertices : &quot;</span>,<span class="func">str</span>(<span class="num">100</span><span class="math">*</span>Count<span class="math">/</span>NumVertices,<span class="num">0</span>,<span class="num">2</span>),<span class="str">&quot; %&quot;</span>)
+         <span class="dirc">#local</span> I<span class="math">=</span>I<span class="math">+</span><span class="num">1</span>;
+      <span class="cond">#end</span>
+      BuildWriteMesh2(VecArr, NormArr, UVArr, Iter_U, Iter_V, FileName)
+   <span class="cond">#end</span>
+   <span class="dirc">#declare</span> <a name="__FU++"><span class="ident">__FU</span></a><span class="math">=</span><span class="num">0</span>;   <span class="dirc">#declare</span> <a name="__TU++"><span class="ident">__TU</span></a><span class="math">=</span><span class="num">0</span>;
+   <span class="dirc">#declare</span> <a name="__FV++"><span class="ident">__FV</span></a><span class="math">=</span><span class="num">0</span>;   <span class="dirc">#declare</span> <a name="__TV++"><span class="ident">__TV</span></a><span class="math">=</span><span class="num">0</span>;
+   <span class="dirc">#undef</span> <a href="#__Fx">__Fx</a>
+   <span class="dirc">#undef</span> <a href="#__Fy">__Fy</a>
+   <span class="dirc">#undef</span> <a href="#__Fz">__Fz</a>
+<span class="cond">#end</span>   
+
+</pre>
+</body>
+</html>

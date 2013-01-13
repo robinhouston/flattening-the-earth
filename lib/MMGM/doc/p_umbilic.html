@@ -1,0 +1,130 @@
+<html>
+<head>
+<title>p_umbilic.pov</title>
+<style type="text/css">
+<!--
+pre{ font-family: "Courier New", Courier, monospace;
+     background-color: #fafafa;
+     border: 1px solid ; border-color: #000000;
+     padding: 5pt;}
+
+pre a:hover {background-color: #eeeeff;}
+
+.med {color: #880088; font-weight: bold;}    /*Media*/
+.func {color: #880088;}                      /*Functions (float, vector, string)*/
+.mat {color: #880088; font-weight: bold;}    /*Materials*/
+.squig {color: #0000dd;}                     /*{}*/
+.cammod {color: #880088;}                    /*Camera modifiers*/
+.glob {color: #880088; font-weight: bold;}   /*Global*/
+.ident {font-weight: bold;}                  /*Identifiers*/
+.obmod {color: #880088;}                     /*Object modifiers*/
+.globmod {color: #880088;}                   /*Global modifiers*/
+.dirc {color: #880088; font-weight: bold;}   /*Directives*/
+.msg {color: #880088; font-weight: bold;}    /*Message streams*/
+.atmo {color: #880088; font-weight: bold;}   /*Atmospheric objects*/
+.matmod {color: #880088;}                    /*Material modifiers*/
+.io {color: #880088; font-weight: bold;}     /*File I/O*/
+.slcom {color: #009922; font-style: italic;} /*Single line comment*/
+.obj {color: #880088; font-weight: bold;}    /*Objects*/
+.mod {color: #880088;}                       /*Modifiers (general)*/
+.inter {color: #880088; font-weight: bold;}  /*Interior*/
+.atmod {color: #880088;}                     /*Atmospheric modifiers*/
+.str {color: #ff0000;}                       /*Strings*/
+.medmod {color: #880088;}                    /*Media modifiers*/
+.num {color: #009999;}                       /*Numbers*/
+.ptrn {color: #880088;}                      /*Patterns*/
+.mlcom {color: #009922; font-style: italic;} /*Multi-line comment*/
+.math {color: #ff0000;}                      /*Mathematical operators*/
+.cam {color: #880088; font-weight: bold;}    /*Camera*/
+.lite {color: #880088; font-weight: bold;}   /*Light source*/
+.cond {color: #880088; font-weight: bold;}   /*Conditionals*/
+.litmod {color: #880088;}                    /*Light modifiers*/
+.dot {color: #880088;}                       /*Dot operators*/
+
+-->
+</style>
+</head>
+<body>
+<p>p_umbilic.pov :</p>
+<pre><span class="slcom">// Persistence of Vision Ray Tracer Scene Description File</span>
+<span class="slcom">// File: p_umbilic.pov</span>
+<span class="slcom">// Vers: 3.5</span>
+<span class="slcom">// Desc: Demo scene showing various ways of generating a</span>
+<span class="slcom">//       parametric surface. An umbilic torus</span>
+<span class="slcom">// Date: 2002/10/20</span>
+<span class="slcom">// Auth: Ingo</span>
+
+
+<span class="dirc">#version</span> <span class="num">3.5</span>;
+
+<span class="dirc">#include</span> <span class="str">&quot;param.inc&quot;</span>
+
+<span class="glob">global_settings</span> <span class="squig">{</span><span class="globmod">assumed_gamma</span> <span class="num">1.0</span><span class="squig">}</span>
+<span class="cam">camera</span> <span class="squig">{</span><span class="cammod">location</span> <span class="math">&lt;</span><span class="num">0</span>,<span class="num">0.5</span>,<span class="math">-</span><span class="num">20</span><span class="math">&gt;</span> <span class="cammod">look_at</span> <span class="math">&lt;</span><span class="math">-</span><span class="num">1</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="squig">}</span> 
+<span class="lite">light_source</span> <span class="squig">{</span><span class="math">&lt;</span><span class="num">500</span>,<span class="num">500</span>,<span class="math">-</span><span class="num">500</span><span class="math">&gt;</span> <span class="matmod">rgb</span> <span class="math">&lt;</span><span class="num">1</span>,<span class="num">0.9</span>,<span class="num">0.8</span><span class="math">&gt;</span><span class="squig">}</span>
+<span class="lite">light_source</span> <span class="squig">{</span><span class="math">&lt;</span><span class="math">-</span><span class="num">100</span>,<span class="num">100</span>,<span class="math">-</span><span class="num">500</span><span class="math">&gt;</span> <span class="matmod">rgb</span> <span class="math">&lt;</span><span class="num">0.3</span>,<span class="num">0.3</span>,<span class="num">0.5</span><span class="math">&gt;</span><span class="squig">}</span>
+
+
+<span class="dirc">#declare</span> <a name="Set"><span class="ident">Set</span></a><span class="math">=</span><span class="num">1</span>; <span class="slcom">//1, 2, 3 or 4</span>
+
+<span class="dirc">#switch</span> (<a href="#Set">Set</a>)
+  <span class="cond">#case</span> (<span class="num">1</span>)
+    <span class="slcom">// The set of functions is not declared, but defined in Parametric directly.</span>
+  <span class="cond">#break</span>
+  
+  <span class="cond">#case</span> (<span class="num">2</span>)
+    <span class="slcom">// Set below is for use with Parametric. </span>
+    <span class="dirc">#declare</span> <a name="F1"><span class="ident">F1</span></a><span class="math">=</span> <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span><span class="func">sin</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span><span class="dot">v</span>)) <span class="math">+</span> <span class="num">2</span><span class="math">*</span><span class="func">sin</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">+</span><span class="dot">v</span>)<span class="squig">}</span>
+    <span class="dirc">#declare</span> <a name="F2"><span class="ident">F2</span></a><span class="math">=</span> <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span><span class="func">cos</span>(<span class="dot">u</span>)<span class="math">*</span>((<span class="num">7</span><span class="math">+</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span><span class="dot">v</span>))<span class="math">+</span>(<span class="num">2</span><span class="math">*</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">+</span><span class="dot">v</span>))))<span class="squig">}</span>
+    <span class="dirc">#declare</span> <a name="F3"><span class="ident">F3</span></a><span class="math">=</span> <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span><span class="func">sin</span>(<span class="dot">u</span>)<span class="math">*</span>((<span class="num">7</span><span class="math">+</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span><span class="dot">v</span>))<span class="math">+</span>(<span class="num">2</span><span class="math">*</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">+</span><span class="dot">v</span>))))<span class="squig">}</span>
+  <span class="cond">#break</span>
+  
+    <span class="slcom">// The two sets below are for use with Paramcalc. The functions or macros</span>
+    <span class="slcom">// need to have the names __Fx, __Fy, __Fz.</span>
+  <span class="cond">#case</span> (<span class="num">3</span>)
+    <span class="dirc">#declare</span> <a name="__Fx"><span class="ident">__Fx</span></a><span class="math">=</span> <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span><span class="func">sin</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span><span class="dot">v</span>)) <span class="math">+</span> <span class="num">2</span><span class="math">*</span><span class="func">sin</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">+</span><span class="dot">v</span>)<span class="squig">}</span>
+    <span class="dirc">#declare</span> <a name="__Fy"><span class="ident">__Fy</span></a><span class="math">=</span> <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span><span class="func">cos</span>(<span class="dot">u</span>)<span class="math">*</span>((<span class="num">7</span><span class="math">+</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span><span class="dot">v</span>))<span class="math">+</span>(<span class="num">2</span><span class="math">*</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">+</span><span class="dot">v</span>))))<span class="squig">}</span>
+    <span class="dirc">#declare</span> <a name="__Fz"><span class="ident">__Fz</span></a><span class="math">=</span> <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span><span class="func">sin</span>(<span class="dot">u</span>)<span class="math">*</span>((<span class="num">7</span><span class="math">+</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span><span class="dot">v</span>))<span class="math">+</span>(<span class="num">2</span><span class="math">*</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">+</span><span class="dot">v</span>))))<span class="squig">}</span>
+  <span class="cond">#break</span>
+  
+  <span class="cond">#case</span> (<span class="num">4</span>)
+    <span class="dirc">#macro</span> <a name="__Fx+"><span class="ident">__Fx</span></a>(U,V)<span class="func">sin</span>((U<span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span>V)) <span class="math">+</span> <span class="num">2</span><span class="math">*</span><span class="func">sin</span>((U<span class="math">/</span><span class="num">3</span>)<span class="math">+</span>V)<span class="cond">#end</span>               
+    <span class="dirc">#macro</span> <a name="__Fy+"><span class="ident">__Fy</span></a>(U,V)<span class="func">cos</span>(U)<span class="math">*</span>((<span class="num">7</span><span class="math">+</span><span class="func">cos</span>((U<span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span>V))<span class="math">+</span>(<span class="num">2</span><span class="math">*</span><span class="func">cos</span>((U<span class="math">/</span><span class="num">3</span>)<span class="math">+</span>V))))<span class="cond">#end</span>
+    <span class="dirc">#macro</span> <a name="__Fz+"><span class="ident">__Fz</span></a>(U,V)<span class="func">sin</span>(U)<span class="math">*</span>((<span class="num">7</span><span class="math">+</span><span class="func">cos</span>((U<span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span>V))<span class="math">+</span>(<span class="num">2</span><span class="math">*</span><span class="func">cos</span>((U<span class="math">/</span><span class="num">3</span>)<span class="math">+</span>V))))<span class="cond">#end</span>
+  <span class="cond">#break</span>
+<span class="cond">#end</span>
+
+
+<span class="obj">object</span> <span class="squig">{</span>
+  
+  <span class="cond">#if</span> (<a href="#Set">Set</a><span class="math">=</span><span class="num">1</span>) 
+    Parametric(
+      <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span><span class="func">sin</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span><span class="dot">v</span>)) <span class="math">+</span> <span class="num">2</span><span class="math">*</span><span class="func">sin</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">+</span><span class="dot">v</span>)<span class="squig">}</span>             
+      <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span><span class="func">cos</span>(<span class="dot">u</span>)<span class="math">*</span>((<span class="num">7</span><span class="math">+</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span><span class="dot">v</span>))<span class="math">+</span>(<span class="num">2</span><span class="math">*</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">+</span><span class="dot">v</span>))))<span class="squig">}</span>
+      <span class="func">function</span>(<span class="dot">u</span>,<span class="dot">v</span>)<span class="squig">{</span><span class="func">sin</span>(<span class="dot">u</span>)<span class="math">*</span>((<span class="num">7</span><span class="math">+</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">-</span>(<span class="num">2</span><span class="math">*</span><span class="dot">v</span>))<span class="math">+</span>(<span class="num">2</span><span class="math">*</span><span class="func">cos</span>((<span class="dot">u</span><span class="math">/</span><span class="num">3</span>)<span class="math">+</span><span class="dot">v</span>))))<span class="squig">}</span>
+      <span class="math">&lt;</span><span class="math">-</span><span class="func">pi</span>, <span class="math">-</span><span class="func">pi</span><span class="math">&gt;</span>, <span class="math">&lt;</span> <span class="func">pi</span>, <span class="func">pi</span><span class="math">&gt;</span>,
+      <span class="num">50</span>,<span class="num">50</span>,<span class="str">&quot;&quot;</span>
+    )
+  <span class="cond">#end</span>
+
+  <span class="cond">#if</span> (<a href="#Set">Set</a><span class="math">=</span><span class="num">2</span>) 
+    Parametric(
+      <a href="#F1">F1</a>, <a href="#F2">F2</a>, <a href="#F3">F3</a>,
+      <span class="math">&lt;</span><span class="math">-</span><span class="func">pi</span>, <span class="math">-</span><span class="func">pi</span><span class="math">&gt;</span>, <span class="math">&lt;</span> <span class="func">pi</span>, <span class="func">pi</span><span class="math">&gt;</span>,
+      <span class="num">50</span>,<span class="num">50</span>,<span class="str">&quot;&quot;</span>
+    )
+  <span class="cond">#end</span>
+    
+  <span class="cond">#if</span> (<a href="#Set">Set</a><span class="math">=</span><span class="num">3</span> <span class="math">|</span> <a href="#Set">Set</a><span class="math">=</span><span class="num">4</span>)
+    Paramcalc(
+       <span class="math">&lt;</span><span class="math">-</span><span class="func">pi</span>, <span class="math">-</span><span class="func">pi</span><span class="math">&gt;</span>, <span class="math">&lt;</span> <span class="func">pi</span>, <span class="func">pi</span><span class="math">&gt;</span>,
+       <span class="num">50</span>,<span class="num">50</span>,<span class="str">&quot;&quot;</span>
+    )
+  <span class="cond">#end</span>
+  
+  <span class="mat">pigment</span> <span class="squig">{</span><span class="matmod">rgb</span> <span class="num">1</span><span class="squig">}</span>
+  <span class="mod">rotate</span> <span class="math">&lt;</span><span class="num">0</span>,<span class="num">55</span>,<span class="num">0</span><span class="math">&gt;</span>
+  <span class="mod">rotate</span> <span class="math">&lt;</span><span class="num">25</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span>
+<span class="squig">}</span></pre>
+</body>
+</html>

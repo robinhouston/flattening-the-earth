@@ -1,0 +1,175 @@
+<html>
+<head>
+<title>msm.inc</title>
+<style type="text/css">
+<!--
+pre{ font-family: "Courier New", Courier, monospace;
+     background-color: #fafafa;
+     border: 1px solid ; border-color: #000000;
+     padding: 5pt;}
+
+pre a:hover {background-color: #eeeeff;}
+
+.med {color: #880088; font-weight: bold;}    /*Media*/
+.func {color: #880088;}                      /*Functions (float, vector, string)*/
+.mat {color: #880088; font-weight: bold;}    /*Materials*/
+.squig {color: #0000dd;}                     /*{}*/
+.cammod {color: #880088;}                    /*Camera modifiers*/
+.glob {color: #880088; font-weight: bold;}   /*Global*/
+.ident {font-weight: bold;}                  /*Identifiers*/
+.obmod {color: #880088;}                     /*Object modifiers*/
+.globmod {color: #880088;}                   /*Global modifiers*/
+.dirc {color: #880088; font-weight: bold;}   /*Directives*/
+.msg {color: #880088; font-weight: bold;}    /*Message streams*/
+.atmo {color: #880088; font-weight: bold;}   /*Atmospheric objects*/
+.matmod {color: #880088;}                    /*Material modifiers*/
+.io {color: #880088; font-weight: bold;}     /*File I/O*/
+.slcom {color: #009922; font-style: italic;} /*Single line comment*/
+.obj {color: #880088; font-weight: bold;}    /*Objects*/
+.mod {color: #880088;}                       /*Modifiers (general)*/
+.inter {color: #880088; font-weight: bold;}  /*Interior*/
+.atmod {color: #880088;}                     /*Atmospheric modifiers*/
+.str {color: #ff0000;}                       /*Strings*/
+.medmod {color: #880088;}                    /*Media modifiers*/
+.num {color: #009999;}                       /*Numbers*/
+.ptrn {color: #880088;}                      /*Patterns*/
+.mlcom {color: #009922; font-style: italic;} /*Multi-line comment*/
+.math {color: #ff0000;}                      /*Mathematical operators*/
+.cam {color: #880088; font-weight: bold;}    /*Camera*/
+.lite {color: #880088; font-weight: bold;}   /*Light source*/
+.cond {color: #880088; font-weight: bold;}   /*Conditionals*/
+.litmod {color: #880088;}                    /*Light modifiers*/
+.dot {color: #880088;}                       /*Dot operators*/
+
+-->
+</style>
+</head>
+<body>
+<p>msm.inc :</p>
+<pre><span class="slcom">// Persistence of Vision Ray Tracer Include File</span>
+<span class="slcom">// File: msm.inc</span>
+<span class="slcom">// Vers: 3.5</span>
+<span class="slcom">// Desc: </span>
+<span class="slcom">// Date: 2002/04/27</span>
+<span class="slcom">// Auth: Ingo Janssen</span>
+
+<span class="dirc">#version</span> <span class="num">3.5</span>;
+<span class="dirc">#include</span> <span class="str">&quot;makemesh.inc&quot;</span>
+
+
+<span class="mlcom">/*======   
+The uv_coordinates come from the square &lt;0,0&gt; - &lt;1,1&gt;.
+
+           The spline is evaluated from t=0 to t=1. For the normal calculation,
+           it is required that all splines (also linear_spline) have one extra
+           point before t=0 and after t=1.
+*/</span>
+<span class="dirc">#macro</span> <a name="BuildSpline"><span class="ident">BuildSpline</span></a>(Arr, SplType)
+   <span class="dirc">#local</span> Ds<span class="math">=</span><span class="func">dimension_size</span>(Arr,<span class="num">1</span>);
+   <span class="dirc">#local</span> Asc<span class="math">=</span><span class="func">asc</span>(<span class="func">strupr</span>(SplType));
+   <span class="cond">#if</span>(Asc<span class="math">!</span><span class="math">=</span><span class="num">67</span> <span class="math">&amp;</span> Asc<span class="math">!</span><span class="math">=</span><span class="num">76</span> <span class="math">&amp;</span> Asc<span class="math">!</span><span class="math">=</span><span class="num">81</span>) 
+      <span class="dirc">#local</span> Asc<span class="math">=</span><span class="num">76</span>;
+      <span class="msg">#debug</span> <span class="str">&quot;\nWrong spline type defined (C/c/L/l/N/n/Q/q), using default linear_spline\n&quot;</span>
+   <span class="cond">#end</span>
+   <span class="func">spline</span> <span class="squig">{</span>
+      <span class="dirc">#switch</span> (Asc)
+         <span class="cond">#case</span> (<span class="num">67</span>) <span class="slcom">//C  cubic_spline</span>
+            <span class="obmod">cubic_spline</span>
+         <span class="cond">#break</span>
+         <span class="cond">#case</span> (<span class="num">76</span>) <span class="slcom">//L  linear_spline</span>
+            <span class="obmod">linear_spline</span>
+         <span class="cond">#break</span>
+         <span class="cond">#case</span> (<span class="num">78</span>) <span class="slcom">//N  linear_spline</span>
+            <span class="obmod">natural_spline</span>
+         <span class="cond">#break</span>
+         <span class="cond">#case</span> (<span class="num">81</span>) <span class="slcom">//Q  Quadratic_spline</span>
+            <span class="obmod">quadratic_spline</span>
+         <span class="cond">#break</span>
+      <span class="cond">#end</span>
+      <span class="dirc">#local</span> Add<span class="math">=</span><span class="num">1</span><span class="math">/</span>((Ds<span class="math">-</span><span class="num">2</span>)<span class="math">-</span><span class="num">1</span>);
+      <span class="dirc">#local</span> J<span class="math">=</span><span class="num">0</span><span class="math">-</span>Add;
+      <span class="dirc">#local</span> I<span class="math">=</span><span class="num">0</span>;
+      <span class="cond">#while</span> (I<span class="math">&lt;</span>Ds)
+         J 
+         Arr[I]
+         <span class="dirc">#local</span> I<span class="math">=</span>I<span class="math">+</span><span class="num">1</span>;
+         <span class="dirc">#local</span> J<span class="math">=</span>J<span class="math">+</span>Add;
+      <span class="cond">#end</span>
+   <span class="squig">}</span>      
+<span class="cond">#end</span>
+
+<span class="dirc">#macro</span> <a name="MSM"><span class="ident">MSM</span></a>(SplineArray, SplRes, Interp_type,  InterpRes, FileName)
+   <span class="dirc">#declare</span> <a name="Build"><span class="ident">Build</span></a><span class="math">=</span>CheckFileName(FileName);
+   <span class="cond">#if</span>(<a href="#Build">Build</a><span class="math">=</span><span class="num">0</span>)
+      <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;\n Parsing mesh2 from file: &quot;</span>, FileName, <span class="str">&quot;\n&quot;</span>)
+      <span class="dirc">#include</span> FileName
+      <span class="obj">object</span><span class="squig">{</span>Surface<span class="squig">}</span>
+   <span class="cond">#else</span>
+      <span class="dirc">#local</span> NumVertices<span class="math">=</span>(SplRes<span class="math">+</span><span class="num">1</span>)<span class="math">*</span>(InterpRes<span class="math">+</span><span class="num">1</span>);
+      <span class="dirc">#local</span> NumFaces<span class="math">=</span>SplRes<span class="math">*</span>InterpRes<span class="math">*</span><span class="num">2</span>;
+      <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;\n Calculating &quot;</span>,<span class="func">str</span>(NumVertices,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot; vertices for &quot;</span>, <span class="func">str</span>(NumFaces,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot; triangles\n\n&quot;</span>)
+      <span class="dirc">#local</span> VecArr<span class="math">=</span><span class="func">array</span>[NumVertices]
+      <span class="dirc">#local</span> NormArr<span class="math">=</span><span class="func">array</span>[NumVertices]
+      <span class="dirc">#local</span> UVArr<span class="math">=</span><span class="func">array</span>[NumVertices]
+      <span class="dirc">#local</span> N<span class="math">=</span><span class="func">dimension_size</span>(SplineArray,<span class="num">1</span>);
+      <span class="dirc">#local</span> TempSplArr0<span class="math">=</span><span class="func">array</span>[N];
+      <span class="dirc">#local</span> TempSplArr1<span class="math">=</span><span class="func">array</span>[N];
+      <span class="dirc">#local</span> TempSplArr2<span class="math">=</span><span class="func">array</span>[N];
+      <span class="dirc">#local</span> PosStep<span class="math">=</span><span class="num">1</span><span class="math">/</span>SplRes;
+      <span class="dirc">#local</span> InterpStep<span class="math">=</span><span class="num">1</span><span class="math">/</span>InterpRes;
+      <span class="dirc">#local</span> Count<span class="math">=</span><span class="num">0</span>;
+      <span class="dirc">#local</span> Pos<span class="math">=</span><span class="num">0</span>;
+      <span class="cond">#while</span>(Pos<span class="math">&lt;</span><span class="math">=</span><span class="num">1</span>)   
+         <span class="dirc">#local</span> I<span class="math">=</span><span class="num">0</span>;
+         <span class="cond">#if</span> (Pos<span class="math">=</span><span class="num">0</span>)
+            <span class="cond">#while</span> (I<span class="math">&lt;</span>N)
+               <span class="dirc">#local</span> Spl<span class="math">=</span><span class="func">spline</span><span class="squig">{</span>SplineArray[I]<span class="squig">}</span>
+               <span class="dirc">#local</span> TempSplArr0[I]<span class="math">=</span><span class="math">&lt;</span><span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="math">+</span>Spl(Pos);
+               <span class="dirc">#local</span> TempSplArr1[I]<span class="math">=</span><span class="math">&lt;</span><span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="math">+</span>Spl(Pos<span class="math">+</span>PosStep);
+               <span class="dirc">#local</span> TempSplArr2[I]<span class="math">=</span><span class="math">&lt;</span><span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="math">+</span>Spl(Pos<span class="math">-</span>PosStep);
+               <span class="dirc">#local</span> I<span class="math">=</span>I<span class="math">+</span><span class="num">1</span>;
+            <span class="cond">#end</span>
+            <span class="dirc">#local</span> S0<span class="math">=</span><a href="#BuildSpline">BuildSpline</a>(TempSplArr0, Interp_type)
+            <span class="dirc">#local</span> S1<span class="math">=</span><a href="#BuildSpline">BuildSpline</a>(TempSplArr1, Interp_type)
+            <span class="dirc">#local</span> S2<span class="math">=</span><a href="#BuildSpline">BuildSpline</a>(TempSplArr2, Interp_type)
+         <span class="cond">#else</span>
+            <span class="cond">#while</span> (I<span class="math">&lt;</span>N)
+               <span class="dirc">#local</span> Spl<span class="math">=</span><span class="func">spline</span><span class="squig">{</span>SplineArray[I]<span class="squig">}</span>
+               <span class="dirc">#local</span> TempSplArr1[I]<span class="math">=</span><span class="math">&lt;</span><span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="math">+</span>Spl(Pos<span class="math">+</span>PosStep);
+               <span class="dirc">#local</span> I<span class="math">=</span>I<span class="math">+</span><span class="num">1</span>;
+            <span class="cond">#end</span>
+            <span class="dirc">#local</span> S1<span class="math">=</span><a href="#BuildSpline">BuildSpline</a>(TempSplArr1, Interp_type)
+         <span class="cond">#end</span>
+         <span class="dirc">#local</span> J<span class="math">=</span><span class="num">0</span>;
+         <span class="cond">#while</span> (J<span class="math">&lt;</span><span class="math">=</span><span class="num">1</span>)
+            <span class="dirc">#local</span> P0<span class="math">=</span><span class="math">&lt;</span><span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="math">+</span>S0(J);
+            <span class="dirc">#local</span> P1<span class="math">=</span><span class="math">&lt;</span><span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="math">+</span>S1(J);
+            <span class="dirc">#local</span> P2<span class="math">=</span><span class="math">&lt;</span><span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="math">+</span>S2(J);
+            <span class="dirc">#local</span> P3<span class="math">=</span><span class="math">&lt;</span><span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="math">+</span>S0(J<span class="math">+</span>InterpStep);
+            <span class="dirc">#local</span> P4<span class="math">=</span><span class="math">&lt;</span><span class="num">0</span>,<span class="num">0</span>,<span class="num">0</span><span class="math">&gt;</span><span class="math">+</span>S0(J<span class="math">-</span>InterpStep);
+            <span class="dirc">#local</span> B1<span class="math">=</span>P4<span class="math">-</span>P0;
+            <span class="dirc">#local</span> B2<span class="math">=</span>P2<span class="math">-</span>P0;
+            <span class="dirc">#local</span> B3<span class="math">=</span>P3<span class="math">-</span>P0;
+            <span class="dirc">#local</span> B4<span class="math">=</span>P1<span class="math">-</span>P0;
+            <span class="dirc">#local</span> N1<span class="math">=</span><span class="func">vcross</span>(B1,B2);
+            <span class="dirc">#local</span> N2<span class="math">=</span><span class="func">vcross</span>(B2,B3);
+            <span class="dirc">#local</span> N3<span class="math">=</span><span class="func">vcross</span>(B3,B4);
+            <span class="dirc">#local</span> N4<span class="math">=</span><span class="func">vcross</span>(B4,B1);
+            <span class="dirc">#local</span> Norm<span class="math">=</span><span class="func">vnormalize</span>((N1<span class="math">+</span>N2<span class="math">+</span>N3<span class="math">+</span>N4));
+            <span class="dirc">#local</span> VecArr[Count]<span class="math">=</span>P0;
+            <span class="dirc">#local</span> NormArr[Count]<span class="math">=</span>Norm;
+            <span class="dirc">#local</span> UVArr[Count]<span class="math">=</span><span class="math">&lt;</span>J,Pos<span class="math">&gt;</span>;
+            <span class="dirc">#local</span> J<span class="math">=</span>J<span class="math">+</span>InterpStep;
+            <span class="dirc">#local</span> Count<span class="math">=</span>Count<span class="math">+</span><span class="num">1</span>;
+         <span class="cond">#end</span>
+         <span class="dirc">#local</span> S2<span class="math">=</span><span class="func">spline</span><span class="squig">{</span>S0<span class="squig">}</span>
+         <span class="dirc">#local</span> S0<span class="math">=</span><span class="func">spline</span><span class="squig">{</span>S1<span class="squig">}</span>
+         <span class="msg">#debug</span> <span class="func">concat</span>(<span class="str">&quot;\r Done &quot;</span>, <span class="func">str</span>(Count,<span class="num">0</span>,<span class="num">0</span>),<span class="str">&quot; vertices : &quot;</span>, <span class="func">str</span>(<span class="num">100</span><span class="math">*</span>Count<span class="math">/</span>NumVertices,<span class="num">0</span>,<span class="num">2</span>),<span class="str">&quot; %&quot;</span>)
+         <span class="dirc">#local</span> Pos<span class="math">=</span>Pos<span class="math">+</span>PosStep;
+      <span class="cond">#end</span>
+      BuildWriteMesh2(VecArr, NormArr, UVArr, InterpRes, SplRes, FileName)
+   <span class="cond">#end</span>
+<span class="cond">#end</span>
+</pre>
+</body>
+</html>

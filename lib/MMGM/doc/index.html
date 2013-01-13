@@ -1,0 +1,871 @@
+<?xml version=1.0?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/strict.dtd">
+<html xmlns="http://www.w3.org/TR/xhtml1">
+  <head>
+    <title>
+      MMGM
+    </title>
+    <link rel="stylesheet" href="seedseven.css" type="text/css" />
+  </head>
+  <body>
+      <ol>
+        <li>
+          POV-Ray Include Files 
+          <ol>
+            <li>
+              <a href="#MMGM">Meshmerizing Mesh Generation Macros</a>: A set of include files to generate mesh 
+              <ol>
+                <li>
+                  <a href="#makemesh">makemesh.inc</a>
+                </li>
+                <li>
+                  <a href="#param">param.inc</a>
+                </li>
+                <li>
+                  <a href="#twovar">twovar.inc</a>
+                </li>
+                <li>
+                  <a href="#coons">coons.inc</a>
+                </li>
+                <li>
+                  <a href="#lathe">lathe.inc</a>
+                </li>
+                <li>
+                  <a href="#msm">msm.inc</a>
+                </li>
+                <li>
+                  <a href="#prism">prism.inc</a>
+                </li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+        <li>
+          <a href="#ldc">Licence, Contact</a>
+        </li>
+      </ol>
+      <hr>
+      <h2>
+        1. POV-Ray Include Files
+      </h2>
+      <p>
+      As stated on the <a href="http://www.povray.org">POV-Ray website</a>;<br />
+      <blockquote>The Persistence of Vision Raytracer is a high-quality, totally free tool for creating stunning three-dimensional graphics. It is available in official versions for Windows, Mac OS/Mac OS X and i86 Linux. The source code is available for those wanting to do their own ports.</blockquote>
+      </p>
+        <h3>
+          <a name="MMGM">1.1. Meshmerizing Mesh Generation Macros</a>
+        </h3>
+          <p>
+          A package with several include files, all intended for generating <code>mesh2</code> objects, so <a href="http://www.povray.org/download/">POV-Ray 3.5</a> is required. Also there are demo-scenes that show the use of every include file. The include files, their functions and use, are listed below.
+          </p>
+          
+          <h4>
+            <a name="makemesh">1.1.1. makemesh.inc</a>
+          </h4>
+            <p>
+            A general include file, used by all other include files in the package. Contains the <code>BuildWriteMesh2()</code> and some helper macros for internal use. Currently writes include files with a <code>mesh2()</code> object or arrays (<code>.arr</code> files), Wavefront <code>.obj</code> files and <code>.pcm</code> files for use with <a href="http://www.geocities.com/SiliconValley/Lakes/1434/">Chris Colefax' Compressed Mesh Macros</a>.</p>
+            <p>Have a look at the <a href="makemesh.html">makemesh.inc code</a></p>
+            <dl>
+              <dt>
+                <code><strong>BuildWriteMesh2( VecArr, NormArr, UVArr, U, V, FileName )</strong></code>
+              </dt>
+              <dd>
+                Builds and optionally writes a <code>mesh2</code> object based on 3 input arrays, the number of quads in <code>u</code> and <code>v</code> direction and a filename.
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>VecArr</code>
+                  </dt>
+                  <dd>
+                    The array that contains the vertices of the triangles in the mesh.
+                  </dd>
+                  <dt>
+                    <code>NormArr</code>
+                  </dt>
+                  <dd>
+                    The array with the normal vectors that go with the vertices.
+                  </dd>
+                  <dt>
+                    <code>UVArr</code>
+                  </dt>
+                  <dd>
+                    The array containing the <code>uv</code>_vectors.
+                  </dd>
+                  <dt>
+                    <code>U</code>
+                  </dt>
+                  <dd>
+                    The amount of subdivisions of the surface in the <code>u</code>-direction.
+                  </dd>
+                  <dt>
+                    <code>V</code>
+                  </dt>
+                  <dd>
+                    The amount of subdivisions in the <code>v</code>-direction. Based on the <code>u</code> and <code>v</code> values the face_indices of the triangles in the mesh are calculated.
+                  </dd>
+                  <dt>
+                    <code>FileName</code>
+                  </dt>
+                  <dd>
+                  The name of the file to whitch the mesh will be written.
+                  <ul>
+                    <li>If it is an empty string (""), no file will be written.</li>
+                    <li>If the file extension is '<code>.obj</code>' a Wavefront objectfile will be written.</li>
+                    <li>If the extension is '<code>.pcm</code>' a compressed mesh file is written.</li>
+                    <li>If the extension is '<code>.arr</code>' an include file with arrays to build a <code>mesh2</code> from.</li>
+                    <li>In any other case an includefile with a <code>mesh2</code> object will be written.</li>
+                  </ul>
+                  If a file name is given, the macro will first check if it already exists. If that is the case, it will try to parse the existing file unless it's a '*<code>.obj</code>', '*<code>.pcm</code>' or '*<code>.arr</code>' file as POV-Ray can not read them directly. In this case a new mesh will be generated, but the existing files will _not_ be over-written.
+                  </dd>
+                </dl>
+              </dd>
+            </dl>
+          <h4>
+            <a name="param">1.1.2. param.inc</a>
+          </h4>
+            <p>Have a look at the <a href="param.html">param.inc code</a></p>
+            <dl>
+              <dt>
+                <code><strong>FromU(A), ToU(A), FromV(A), ToV(A)</strong></code>
+              </dt>
+              <dd>
+                These are helper macros for the <code>Parametric()</code> macro. They are used when a value should be approximated, but not reached.
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>A</code>
+                  </dt>
+                  <dd>
+                    A float value.
+                  </dd>
+                </dl>
+              </dd>
+            </dl>
+            <dl>
+              <dt>
+                <code><strong>Parametric(__Fx, __Fy, __Fz, &lt;UVmin&gt;, &lt;UVmax&gt;, Iter_U, Iter_V, FileName)</strong></code>
+              </dt>
+              <dd>
+              Builds a parametric surface out of three given functions.
+              The uv_coordinates for texturing the surface come from the square &lt;0,0&gt; - &lt;1,1&gt;. 
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>__Fx, __Fy, __Fz</code>
+                  </dt>
+                  <dd>
+                    The three functions from which the object will be generated.
+                  </dd>
+                  <dt>
+                    <code>UVmin</code>
+                  </dt>
+                  <dd>
+                    A 2-D vector that gives the lower boundaries of the <code>uv</code>-rectangle, &lt;u min, v min&gt;.
+                  </dd>
+                  <dt>
+                    <code>UVmax</code>
+                  </dt>
+                  <dd>
+                    A 2-D vector that gives the upper boundaries of the <code>uv</code>-rectangle. These vectors are the range within which the surface is calculated.
+                  </dd>
+                  <dt>
+                    <code>Iter_U</code>
+                  </dt>
+                  <dd>
+                    Sets the resolution of the mesh in the <code>u</code> range.
+                  </dd>
+                  <dt>
+                    <code>Iter_V</code>
+                  </dt>
+                  <dd>
+                    Sets the resolution of the mesh in the <code>v</code> range.
+                  </dd>
+                  <dt>
+                    <code>FileName</code>
+                  </dt>
+                  <dd>
+                  The name of the file to whitch the mesh will be written.
+                  <ul>
+                    <li>If it is an empty string (""), no file will be written.</li>
+                    <li>If the file extension is '<code>.obj</code>' a Wavefront objectfile will be written.</li>
+                    <li>If the extension is '<code>.pcm</code>' a compressed mesh file is written.</li>
+                    <li>If the extension is '<code>.arr</code>' an include file with arrays to build a <code>mesh2</code> from.</li>
+                    <li>In any other case an includefile with a <code>mesh2</code> object will be written.</li>
+                  </ul>
+                  If a file name is given, the macro will first check if it already exists. If that is the case, it will try to parse the existing file unless it's a '*<code>.obj</code>', '*<code>.pcm</code>' or '*<code>.arr</code>' file as POV-Ray can not read them directly. In this case a new mesh will be generated, but the existing files will _not_ be over-written.
+                  </dd>
+                </dl>
+                <p>
+                <em>Use:</em>
+                </p>
+                <p>
+                  At the top of your scene-file put:
+                </p>
+<pre>
+ #include "param.inc"
+</pre>
+                <p>Set up a set of parametric functions, using the <code>function(){}</code> statement. A unit sphere may look like this: </p>
+<pre>
+ #declare R=1;
+ #declare F1=function(u,v){R*sin(v)*cos(u)}
+ #declare F2=function(u,v){R*cos(v)}
+ #declare F3=function(u,v){R*sin(v)*sin(u)}
+</pre>
+                <p>Now the functions can be used in an object: </p>
+<pre>
+ object { 
+   Parametric (
+     F1,  F2,  F3,
+     &lt;0, FromV(0)&gt;, &lt;pi, 2*pi&gt;,
+     20, 10, ""
+   )
+   pigment {rgb 1}
+   finish{specular 0.3}
+ }
+</pre>
+                <p>The functions don't need to be declared first, they can be put directly in Parametric()</p>
+<pre>
+ object { 
+   Parametric (
+     function(u,v){R*sin(v)*cos(u)},
+     function(u,v){R*cos(v)},
+     function(u,v){R*sin(v)*sin(u)}
+     &lt;0, FromV(0)&gt;, &lt;pi, 2*pi&gt;,
+     20, 10, ""
+   )
+   pigment {rgb 1}
+   finish{specular 0.3}
+ }
+</pre>
+
+  
+                <p> Note the use of the macro <code>FromV()</code> to start the <code>v</code>-range with. This means that the range is specified as 0 &lt; u &lt;= pi. The minimum will get close to, but not reach the value. The three other macros for this are <code>ToU()</code>, <code>FromU()</code> and <code>ToV()</code>. They have to be used when the equations can not be solved for the boundaries. </p>
+                <p>
+                  The resolution of the mesh is set with <code>Iter_U</code> and <code>Iter_V</code>, the amount of steps by which the <code>u</code> and <code>v</code> ranges are divided. The total amount of triangles calculated will be <code>Iter_U*Iter_V*2</code>.</p>
+                <p>
+                  If you want to save the resulting mesh to a file, enter a filename in the macro.
+                </p>
+                <p>
+                <em>Trouble shooting:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>Parse Error: cannot normalize zero-length vector.</code>
+                  </dt>
+                  <dd>
+                    Check if the <code>u</code> and <code>v</code> boundaries are specified the right way? Should all values be included, or should <code>FromU() ToV()</code> etc. be used?
+                  </dd>
+                  <dt>
+                    <code>Parse Error: No matching } in 'smooth_triangle', camera found instead</code>
+                  </dt>
+                  <dd>
+                    This happens while reading an unfinished mesh from file. Was parsing stopped while writing the mesh? Delete the file.
+                  </dd>
+                </dl>
+              </dd>
+            </dl>
+
+            <dl>
+              <dt>
+                <code><strong>Paramcalc(&lt;UVmin&gt;, &lt;UVmax&gt;, Iter_U, Iter_V, FileName)</strong></code>
+              </dt>
+              <dd>
+              The actual hart of <code>param.inc</code>, here the calculations for the parametric surface happen. <code>Parametric()</code> is just a small frontend macro to make it look more like POV-Rays internal <code>parametric</code> object. Paramcalc can be used directly. Actually it has to be used directly when the surface has to be build from macros instead of functions. <code>Paramcalc()</code> will try to build a surface from macros or declared functions with the names <code><strong>__Fx</strong></code>, <code><strong>__Fy</strong></code> and <code><strong>__Fz</strong></code>. The uv_coordinates for texturing the surface come from the square &lt;0,0&gt; - &lt;1,1&gt;
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>UVmin</code>
+                  </dt>
+                  <dd>
+                    A 2-D vector that gives the lower boundaries of the <code>uv</code>-rectangle, &lt;u min, v min&gt;.
+                  </dd>
+                  <dt>
+                    <code>UVmax</code>
+                  </dt>
+                  <dd>
+                    A 2-D vector that gives the upper boundaries of the <code>uv</code>-rectangle. These vectors are the range within which the surface is calculated. 
+                  </dd>
+                  <dt>
+                    <code>Iter_U</code>
+                  </dt>
+                  <dd>
+                    Sets the resolution of the mesh in the <code>u</code> range.
+                  </dd>
+                  <dt>
+                    <code>Iter_V</code>
+                  </dt>
+                  <dd>
+                    Sets the resolution of the mesh in the <code>v</code> range.
+                  </dd>
+                  <dt>
+                    <code>FileName</code>
+                  </dt>
+                  <dd>
+                  The name of the file to whitch the mesh will be written.
+                  <ul>
+                    <li>If it is an empty string (""), no file will be written.</li>
+                    <li>If the file extension is '<code>.obj</code>' a Wavefront objectfile will be written.</li>
+                    <li>If the extension is '<code>.pcm</code>' a compressed mesh file is written.</li>
+                    <li>If the extension is '<code>.arr</code>' an include file with arrays to build a <code>mesh2</code> from.</li>
+                    <li>In any other case an includefile with a <code>mesh2</code> object will be written.</li>
+                  </ul>
+                  If a file name is given, the macro will first check if it already exists. If that is the case, it will try to parse the existing file unless it's a '*<code>.obj</code>', '*<code>.pcm</code>' or '*<code>.arr</code>' file as POV-Ray can not read them directly. In this case a new mesh will be generated, but the existing files will _not_ be over-written.
+                  </dd>
+                </dl>
+                <p>
+                <em>Use:</em>
+                </p>
+                <p>
+                  At the top of your scene-file put:
+                </p>
+<pre>
+ #include "param.inc"
+</pre>
+                <p>Set up a set of macros that wil be the base of the parametric surface. The names of the macros <strong>have</strong> to be: <code><strong>__Fx</strong></code>, <code><strong>__Fy</strong></code> and <code><strong>__Fz</strong></code>. A unit sphere may look like this: </p>
+<pre>
+ #declare R=1;
+ #macro __Fx(U,V) R*sin(V)*cos(U) #end
+ #macro __Fy(U,V) R*cos(V) #end
+ #macro __Fz(U,V) R*sin(V)*sin(U) #end
+</pre>
+                <p>Note that you can't use lower case <code>u</code> and <code>v</code> in the macros. Now the macros can be used to create an object: </p>
+<pre>
+ object { 
+   Paramcalc (
+     &lt;0, FromV(0)&gt;, &lt;pi, 2*pi&gt;,
+     20, 10, ""
+   )
+   pigment {rgb 1}
+   finish{specular 0.3}
+ }
+</pre>
+                <p><a href="p_umbilic.html">p_umbilic.pov</a> shows various ways of using Parametric() and Paramcalc()</p>
+</dl>
+
+          <h4>
+            <a name="twovar">1.1.3. twovar.inc</a>
+          </h4>
+          <p>Have a look at the <a href="twovar.html">twovar.inc code</a></p>
+            <dl>
+              <dt>
+                <code><strong>TwoVarSurf( __Fuv, Urange, Vrange, Iter_U, Iter_V, FileName )</strong></code>
+              </dt>
+              <dd>
+                Builds a <code>mesh2</code> surface of a function with two variables <code>(u,v)</code>. The uv_coordinates for texturing the surface come from the square &lt;0,0&gt; - &lt;1,1&gt;
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>__Fuv</code>
+                  </dt>
+                  <dd>
+                    The function to be turned into a mesh2 object.
+                  </dd>
+                  <dt>
+                    <code>Urange</code>
+                  </dt>
+                  <dd>
+                    A 2-D vector that gives the boundaries of <code>u</code>.
+                  </dd>
+                  <dt>
+                    <code>Vrange</code>
+                  </dt>
+                  <dd>
+                    A 2-D vector that gives the boundaries of <code>v</code>. These are the ranges within which the surface is calculated.
+                  </dd>
+                  <dt>
+                    <code>Iter_U</code>
+                  </dt>
+                  <dd>
+                    Sets the resolution of the mesh in the <code>u</code> range
+                  </dd>
+                  <dt>
+                    <code>Iter_V</code>
+                  </dt>
+                  <dd>
+                    Sets the resolution of the mesh in the <code>v</code> range.
+                  </dd>
+                  <dt>
+                    <code>FileName</code>
+                  </dt>
+                  <dd>
+                  The name of the file to whitch the mesh will be written.
+                  <ul>
+                    <li>If it is an empty string (""), no file will be written.</li>
+                    <li>If the file extension is '<code>.obj</code>' a Wavefront objectfile will be written.</li>
+                    <li>If the extension is '<code>.pcm</code>' a compressed mesh file is written.</li>
+                    <li>If the extension is '<code>.arr</code>' an include file with arrays to build a <code>mesh2</code> from.</li>
+                    <li>In any other case an includefile with a <code>mesh2</code> object will be written.</li>
+                  </ul>
+                  If a file name is given, the macro will first check if it already exists. If that is the case, it will try to parse the existing file unless it's a '*<code>.obj</code>', '*<code>.pcm</code>' or '*<code>.arr</code>' file as POV-Ray can not read them directly. In this case a new mesh will be generated, but the existing files will _not_ be over-written.
+                  </dd>
+                </dl>
+                <p>
+                  <em>Use:</em>
+                </p>
+                <p>
+                  At the top of your scene:
+                </p>
+<pre>
+ #include twovar.inc
+</pre>
+                Set up a function, for example: 
+<pre>
+ #declare F1=function{pattern{wood sine_wave turbulence 0.2}}
+ #declare F2=function(u,v){F1(u/3,v/3,0)} 
+</pre>
+                And use it in an object: 
+<pre>
+ object {
+   TwoVarSurf(
+     F2,
+     &lt;-6,6&gt;,&lt;-6,6&gt;,
+     20,20,"" 
+   )
+   pigment{
+     uv_mapping
+     checker 
+     rgb &lt;0,0,0.2&gt;
+     rgb &lt;1,0.85,0.85&gt;
+     scale 0.5
+   } 
+   rotate &lt;-110,45,0&gt;
+ }  
+</pre>
+              </dd>
+            </dl>
+          <h4>
+            <a name="coons">1.1.4. coons.inc</a>
+          </h4>
+            <p>
+              Generates a surface based on a set of four splines, attached head to tail.
+              </p>
+            <p>Have a look at the <a href="coons.html">coons.inc code</a></p>
+            <dl>
+              <dt>
+                <code><strong>Coons(Spl1, Spl2, Spl3, Spl4, Iter_U, Iter_V, FileName)</strong></code>
+              </dt>
+              <dd>
+                Generates a "coons surface". The surface is defined by four splines, all attached head to tail to the previous / next one. The <code>uv</code>_coordinates for texturing the surface
+                come from the square &lt;0,0&gt; - &lt;1,1&gt;.
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>Spl1 - 4</code>
+                  </dt>
+                  <dd>
+                    The four spline that define the surface. The splines are evaluated from t=0 to t=1.
+                  </dd>
+                  <dt>
+                    <code>Iter_U</code>
+                  </dt>
+                  <dd>
+                    The resolution for the splines 1 and 3.
+                  </dd>
+                  <dt>
+                    <code>Iter_V</code>
+                  </dt>
+                  <dd>
+                    The resolution for the splines 2 and 4.
+                  </dd>
+                  <dt>
+                    <code>FileName</code>
+                  </dt>
+                  <dd>
+                  The name of the file to whitch the mesh will be written.
+                  <ul>
+                    <li>If it is an empty string (""), no file will be written.</li>
+                    <li>If the file extension is '<code>.obj</code>' a Wavefront objectfile will be written.</li>
+                    <li>If the extension is '<code>.pcm</code>' a compressed mesh file is written.</li>
+                    <li>If the extension is '<code>.arr</code>' an include file with arrays to build a <code>mesh2</code> from.</li>
+                    <li>In any other case an includefile with a <code>mesh2</code> object will be written.</li>
+                  </ul>
+                  If a file name is given, the macro will first check if it already exists. If that is the case, it will try to parse the existing file unless it's a '*<code>.obj</code>', '*<code>.pcm</code>' or '*<code>.arr</code>' file as POV-Ray can not read them directly. In this case a new mesh will be generated, but the existing files will _not_ be over-written.
+                  </dd>
+                </dl>
+              </dd>
+            </dl>
+          <h4>
+            <a name="lathe">1.1.5. lathe.inc</a>
+          </h4>
+            <p>
+              Like the POV-Ray lathe object, but the result is a <code>mesh2</code>.
+            </p>
+            <p>Have a look at the <a href="lathe.html">lathe.inc code</a></p>
+            <dl>
+              <dt>
+                <code><strong>Lathe(Spl, ResSpl, Rot, ResRot, FileName)</strong></code>
+              </dt>
+              <dd>
+                The Lathe macro generates an object by rotating a curve about the y-axis. This curve does not need to be restraint to the <code>xy-</code>plane. The result is a <code>mesh2</code>
+                object. The uv_coordinates for texturing the surface come from the square &lt;0,0&gt; - &lt;1,1&gt;.
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>Spl</code>
+                  </dt>
+                  <dd>
+                    The spline to be rotated. The spline is evaluated from t=0 to t=1. For the normal calculation, it is required that all splines, <em>also linear_splines</em>, have one extra point
+                    before t=0 and after t=1.
+                  </dd>
+                  <dt>
+                    <code>ResSpl</code>
+                  </dt>
+                  <dd>
+                    The amount of triangles to be used along the spline.
+                  </dd>
+                  <dt>
+                    <code>Rot</code>
+                  </dt>
+                  <dd>
+                    The angle, in degrees, the spline has to be rotated around the <code>y</code>-axis.
+                  </dd>
+                  <dt>
+                    <code>ResRot</code>
+                  </dt>
+                  <dd>
+                    The amount of triangles to be used in the circumference.
+                  </dd>
+                  <dt>
+                    <code>FileName</code>
+                  </dt>
+                  <dd>
+                  The name of the file to whitch the mesh will be written.
+                  <ul>
+                    <li>If it is an empty string (""), no file will be written.</li>
+                    <li>If the file extension is '<code>.obj</code>' a Wavefront objectfile will be written.</li>
+                    <li>If the extension is '<code>.pcm</code>' a compressed mesh file is written.</li>
+                    <li>If the extension is '<code>.arr</code>' an include file with arrays to build a <code>mesh2</code> from.</li>
+                    <li>In any other case an includefile with a <code>mesh2</code> object will be written.</li>
+                  </ul>
+                  If a file name is given, the macro will first check if it already exists. If that is the case, it will try to parse the existing file unless it's a '*<code>.obj</code>', '*<code>.pcm</code>' or '*<code>.arr</code>' file as POV-Ray can not read them directly. In this case a new mesh will be generated, but the existing files will _not_ be over-written.
+                  </dd>
+                </dl>
+              </dd>
+            </dl>
+          <h4>
+            <a name="msm">1.1.6. msm.inc</a>
+          </h4>
+            <p>
+              Contains two macros, one for generating splines from point arrays that can also be used generally, but is intended for the <code>MSM()</code> macro. This is macro that creates surface based on multiple splines. The uv_coordinates for texturing the surface come from the square &lt;0,0&gt; - &lt;1,1&gt;
+              </p>
+            <p>Have a look at the <a href="msm.html">msm.inc code</a></p>
+            <dl>
+              <dt>
+                <code><strong>BuildSpline(Arr, SplType)</strong></code>
+              </dt>
+              <dd>
+                Generates a spline from an array of points. The resulting spline has a t-range from 0 to 1 plus one before 0 and beyond 1, <em>also for linear splines</em>. A spline from a six point
+                array will look like: 
+<pre>
+ spline {
+   -1/3, &lt;...&gt;
+    0/3, &lt;...&gt;
+    1/3, &lt;...&gt;
+    2/3, &lt;...&gt;
+    3/3, &lt;...&gt;
+    4/3, &lt;...&gt;
+ }
+</pre>
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>Arr</code>
+                  </dt>
+                  <dd>
+                    An array of points (vectors)
+                  </dd>
+                  <dt>
+                    <code>SplType</code>
+                  </dt>
+                  <dd>
+                    The type of spline to be generated. Input string: 
+                    <ul>
+                      <li>
+                        <code>C or c: cubic_spline</code>
+                      </li>
+                      <li>
+                        <code>L or l: linear_spline</code>
+                      </li>
+                      <li>
+                        <code>N or n: natural_spline</code>
+                      </li>
+                      <li>
+                        <code>Q or q: quadratic_spline</code>
+                      </li>
+                    </ul>
+                  </dd>
+                </dl>
+                <p>
+                  <em>Use:</em>
+                </p>
+<pre>
+ #declare Point = array[n]{&lt;...&gt;, &lt;...&gt;, &lt;...&gt;, ...}
+ #declare New_spline = BuildSpline(Point, "C")
+</pre>
+              </dd>
+            </dl>
+            <dl>
+              <dt>
+                <code><strong>MSM(SplineArray, SplRes, Interp_type, InterpRes, FileName)</strong></code>
+              </dt>
+              <dd>
+              Generates a surface from an array of splines, the white curves in the image. From these input splines the points with the same t-values are connected by newly generated splines. In the image these are the red curves. From these the surface is build.
+              <p>
+              <img src="msm.png" align="top" alt="msm.png shows the input splines (white), the generated splines (red) and the resulting surface" align="left" width="302" height="162" /></p>
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>SplineArray</code>
+                  </dt>
+                  <dd>
+                    An array containing all the input splines.<br />
+                     The splines are evaluated from t=0 to t=1. For the normal calculation, it is required that all splines, <em>also linear_splines</em>, have one extra point before t=0 and after
+                    t=1. The surface is build form the second to the last but one spline from the array, even if the splines should be connected by linear interpolation.
+                  </dd>
+                  <dt>
+                    <code>SplRes</code>
+                  </dt>
+                  <dd>
+                    The resolution, amount of triangles, in the direction of the input splines.
+                  </dd>
+                  <dt>
+                    <code>Interp_type</code>
+                  </dt>
+                  <dd>
+                    The type of interpolation that should be used for the new build splines. The input is a string: 
+                    <ul>
+                      <li>
+                        <code>C or c: cubic_spline</code>
+                      </li>
+                      <li>
+                        <code>L or l: linear_spline</code>
+                      </li>
+                      <li>
+                        <code>N or n: natural_spline</code>
+                      </li>
+                      <li>
+                        <code>Q or q: quadratic_spline</code>
+                      </li>
+                    </ul>
+                  </dd>
+                  <dt>
+                    <code>InterpRes</code>
+                  </dt>
+                  <dd>
+                    The resolution, amount of triangles, in the direction of the new splines.
+                  </dd>
+                  <dt>
+                    <code>FileName</code>
+                  </dt>
+                  <dd>
+                  The name of the file to whitch the mesh will be written.
+                  <ul>
+                    <li>If it is an empty string (""), no file will be written.</li>
+                    <li>If the file extension is '<code>.obj</code>' a Wavefront objectfile will be written.</li>
+                    <li>If the extension is '<code>.pcm</code>' a compressed mesh file is written.</li>
+                    <li>If the extension is '<code>.arr</code>' an include file with arrays to build a <code>mesh2</code> from.</li>
+                    <li>In any other case an includefile with a <code>mesh2</code> object will be written.</li>
+                  </ul>
+                  If a file name is given, the macro will first check if it already exists. If that is the case, it will try to parse the existing file unless it's a '*<code>.obj</code>', '*<code>.pcm</code>' or '*<code>.arr</code>' file as POV-Ray can not read them directly. In this case a new mesh will be generated, but the existing files will _not_ be over-written.
+                  </dd>
+                </dl>
+                <p>
+                  <em>Use:</em>
+                </p>
+<pre>
+ #declare A1=spline {....}
+ #declare A2=spline {....}
+ #declare A3=spline {....}
+ #declare A4=spline {....}
+
+ #declare An=array[7]{
+    spline{A4},
+    spline{A1}, //first point
+    spline{A2},
+    spline{A3},
+    spline{A4},
+    spline{A1}, //last point (closes the shape)
+    spline{A2}
+ }
+   
+ object {
+   MSM(An, 100, "c",  100, "")
+   ...
+   ..
+   .
+ } 
+</pre>
+              </dd>
+            </dl>
+          <h4>
+            <a name="prism">1.1.7. prism.inc</a>
+          </h4>
+            <p>
+              Has two macros, prism() and prism1(). Prism is like the POV-Ray prism object.
+            </p>
+            <p>Have a look at the <a href="prism.html">prism.inc code</a></p>
+            <dl>
+              <dt>
+                <code><strong>Prism(Spl, ResSpl, Height, HRes, FileName)</strong></code>
+              </dt>
+              <dd>
+                Extrudes a spline along the <code>y</code>-axis. This curve does not need to be restraint to the <code>xz-</code>plane. The result is a <code>mesh2</code> object. The <code>
+                uv</code>_coordinates for texturing the surface come from the square &lt;0,0&gt; - &lt;1,1&gt;.
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>Spl</code>
+                  </dt>
+                  <dd>
+                    The spline to be extruded.<br />
+                     The spline is evaluated from t=0 to t=1. For the normal calculation, it is required that the input spline, <em>also if a linear_spline</em> have one extra point before t=0 and
+                    after t=1.
+                  </dd>
+                  <dt>
+                    <code>ResSpl</code>
+                  </dt>
+                  <dd>
+                    The amount of triangles to be used along the spline.
+                  </dd>
+                  <dt>
+                    <code>Height</code>
+                  </dt>
+                  <dd>
+                    The amount of POV-units along the <code>y</code>-axis to extrude the shape.
+                  </dd>
+                  <dt>
+                    <code>HRes</code>
+                  </dt>
+                  <dd>
+                    The amount of triangles to be used in the height.
+                  </dd>
+                  <dt>
+                    <code>FileName</code>
+                  </dt>
+                  <dd>
+                  The name of the file to whitch the mesh will be written.
+                  <ul>
+                    <li>If it is an empty string (""), no file will be written.</li>
+                    <li>If the file extension is '<code>.obj</code>' a Wavefront objectfile will be written.</li>
+                    <li>If the extension is '<code>.pcm</code>' a compressed mesh file is written.</li>
+                    <li>If the extension is '<code>.arr</code>' an include file with arrays to build a <code>mesh2</code> from.</li>
+                    <li>In any other case an includefile with a <code>mesh2</code> object will be written.</li>
+                  </ul>
+                  If a file name is given, the macro will first check if it already exists. If that is the case, it will try to parse the existing file unless it's a '*<code>.obj</code>', '*<code>.pcm</code>' or '*<code>.arr</code>' file as POV-Ray can not read them directly. In this case a new mesh will be generated, but the existing files will _not_ be over-written.
+                  </dd>
+                </dl>
+              </dd>
+            </dl>
+            <dl>
+              <dt>
+                <code><strong>Prism1(Spl, ResSpl, PSpl, PRes, FileName)</strong></code>
+              </dt>
+              <dd>
+                Extrudes a spline along the <code>y</code>-axis. In every step the spline is scaled by the 'relative' distance from the <code>y</code>-axis of the second spline (PSpl). The result is
+                a <code>mesh2</code> object. The <code>uv</code>_coordinates for texturing the surface come from the square &lt;0,0&gt; - &lt;1,1&gt;.
+              </dd>
+              <dd>
+                <p>
+                  <em>Parameters:</em>
+                </p>
+                <dl>
+                  <dt>
+                    <code>Spl</code>
+                  </dt>
+                  <dd>
+                    The spline to be extruded.<br />
+                     The spline is evaluated from t=0 to t=1. For the normal calculation, it is required that the input spline, <em>also if a linear_spline</em> have one extra point before t=0 and
+                    after t=1.
+                  </dd>
+                  <dt>
+                    <code>ResSpl</code>
+                  </dt>
+                  <dd>
+                    The amount of triangles to be used along the spline.
+                  </dd>
+                  <dt>
+                    <code>PSpl</code>
+                  </dt>
+                  <dd>
+                    The spline that determines by what amount the extrusion is scaled in each step. The scaling is based on the relative distance from the <code>y</code>-axis. That is, at t=0 the
+                    scale is always 1, so that the start of the shape is identical to the spline Spl. PSpl also sets the height of the resulting shape (its <code>y</code>-value at t=1).<br />
+                     The spline is evaluated from t=0 to t=1. For the normal calculation, it is required that the input spline, <em>also if a linear_spline</em> have one extra point before t=0 and
+                    after t=1.
+                  </dd>
+                  <dt>
+                    <code>FileName</code>
+                  </dt>
+                  <dd>
+                  The name of the file to whitch the mesh will be written.
+                  <ul>
+                    <li>If it is an empty string (""), no file will be written.</li>
+                    <li>If the file extension is '<code>.obj</code>' a Wavefront objectfile will be written.</li>
+                    <li>If the extension is '<code>.pcm</code>' a compressed mesh file is written.</li>
+                    <li>If the extension is '<code>.arr</code>' an include file with arrays to build a <code>mesh2</code> from.</li>
+                    <li>In any other case an includefile with a <code>mesh2</code> object will be written.</li>
+                  </ul>
+                  If a file name is given, the macro will first check if it already exists. If that is the case, it will try to parse the existing file unless it's a '*<code>.obj</code>', '*<code>.pcm</code>' or '*<code>.arr</code>' file as POV-Ray can not read them directly. In this case a new mesh will be generated, but the existing files will _not_ be over-written.
+                  </dd>
+                </dl>
+              </dd>
+            </dl>
+      <hr>
+      <h2>
+        <a name="ldc">2. Licence, Disclaimer, Contact</a>
+      </h2>
+        <h3>
+          2.1. Licence
+        </h3>
+          <p>
+            MIT
+          </p>
+        <h3>
+          2.2. Contact
+        </h3>
+        <p> Ingo Janssen<br />
+        e-mail: <a href="mailto:ingoogni@gmail.com">ingoogni@gmail.com</a>
+        </p>
+  </body>
+</html>
+

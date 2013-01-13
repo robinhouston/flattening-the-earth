@@ -1,0 +1,39 @@
+Changes to the Meshmerizing Mesh Maker Macros package:
+
+2002/10/23
+makemesh.inc  : added the option to write Wavefront '*.obj'files, compressed
+                mesh '*.pcm' files and '*.arr' files containing arrays for
+                building a mesh2().
+                Added CheckFileName(FileName) macro. This is also used by all
+                other include files in the package.
+
+param.inc &   : the texture for uv_mapping is now taken from the square <0,0>-
+twovar.inc      <1,1> instead of from the rectangle <UVmin>-<UVmax>. This may
+                break exiting scenes :(
+
+all inc files : checking wether or not to build a mesh or parse it from a file
+                is now done via the CheckFileName() macro in makemesh.inc.
+
+2002/10/20
+param.inc     : split the original Parametric() macro into two. Parametric() and
+                Paramcalc(). The first is now a frontend to the latter.
+                Paramcalc() does all the hard work. It can be used directly.
+                This to make it possible to use macros instead of functions as
+                the base for a parametric surface.
+
+2002/09/29
+p_steiner.pov : replaced some ^ by pow(), these were leftovers from the
+                the POV-Ray 3.5 beta-phase.
+
+2002/09/01
+makemesh.inc  : changed the write sequences, so it will write a big number
+                like 1002001 as 1002001 and not as 1.002e+006. The latter
+                will make a mess when parsing a mesh from file.
+
+2002/08/28
+prism.inc     : replaced some ^ by pow(), these were leftovers from the
+                the POV-Ray 3.5 beta-phase.
+
+2002/07/25
+param.inc     : fixed an error of the normal calculation near
+                the edges of an object. (Umin & Vmin)
