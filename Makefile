@@ -2,10 +2,7 @@ POVRAY_FLAGS = +W1024 +H768 +ua
 #POVRAY_FLAGS = +ua
 #POVRAY_FLAGS = +W160 +H120 +ua
 
-all: earth.png
-
-open: earth.png
-	open earth.png
+all: output/bounce.mp4
 
 clean:
 	rm -f earth.png bounce*.png bounce.mp4
@@ -13,10 +10,10 @@ clean:
 %.png: %.pov
 	povray $(POVRAY_FLAGS) $<
 
-%.mp4: %.ini %.pov
+output/%.mp4: %.ini %.pov
 	povray $(POVRAY_FLAGS) $< && \
-	ffmpeg -y -i $*%02d.png $@
+	ffmpeg -y -i rendered/$*/$*%02d.png $@
 
-bounce.mp4: bounce.ini bounce.pov
+output/bounce.mp4: bounce.ini bounce.pov
 	povray $(POVRAY_FLAGS) $< && \
-	ffmpeg -y -itsoffset 0.9 -i sfx/spring-sound.mp3 -i bounce%02d.png $@
+	ffmpeg -y -itsoffset 0.9 -i sfx/spring-sound.mp3 -i rendered/bounce/bounce%02d.png $@
