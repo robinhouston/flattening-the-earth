@@ -18,4 +18,4 @@ output/bounce.mp4: bounce.ini bounce.pov
 
 output/cylindrical-equal-area.mp4: cylindrical-equal-area.ini cylindrical-equal-area.pov
 	povray $(POVRAY_FLAGS) $< && \
-	ffmpeg -y -i rendered/cylindrical-equal-area/cylindrical-equal-area%02d.png $@
+	ffmpeg -y -i rendered/cylindrical-equal-area/cylindrical-equal-area%02d.png -vcodec libx264 -r 24 -pix_fmt yuv420p $@
