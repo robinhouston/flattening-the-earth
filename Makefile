@@ -1,8 +1,8 @@
 POVRAY_FLAGS =
 
-all: output/cylindrical-equal-area.mp4
+all: output/cea-composite.mp4
 
-output/cea-final.freeze-1s.mp4: rendered/cylindrical-equal-area/cylindrical-equal-area48.png
+output/cea-final.freeze-1s.mp4: rendered/cea-morph/cea-morph48.png
 	ffmpeg -y -f image2 -r 1/1 -i rendered/cea-open/cea-open48.png -vcodec libx264 -pix_fmt yuv420p $@
 
 output/%.freeze-1s.mp4:

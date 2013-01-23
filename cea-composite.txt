@@ -2,7 +2,7 @@
 file 'output/spin.freeze-1s.mp4'
 file 'output/spin.mp4'
 #file 'output/spin.freeze-1s.mp4'
-file 'output/cylindrical-equal-area.mp4'
+file 'output/cea-morph.mp4'
 #file 'output/cea-spin.freeze-1s.mp4'
 file 'output/cea-spin.mp4'
 #file 'output/cea-spin.freeze-1s.mp4'
