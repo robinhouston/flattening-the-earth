@@ -1,0 +1,10 @@
+# composite animation showing the cylindrical equal area unfolding
+file 'output/spin.freeze-1s.mp4'
+file 'output/spin.mp4'
+#file 'output/spin.freeze-1s.mp4'
+file 'output/cylindrical-equal-area.mp4'
+#file 'output/cea-spin.freeze-1s.mp4'
+file 'output/cea-spin.mp4'
+#file 'output/cea-spin.freeze-1s.mp4'
+file 'output/cea-open.mp4'
+file 'output/cea-final.freeze-1s.mp4'
